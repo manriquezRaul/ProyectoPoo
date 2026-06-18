@@ -12,7 +12,7 @@ public class NotaController {
     @GetMapping
     public ArrayList<Nota> obtenerNotas() {
         return new ArrayList<>();
-    }
+    } //me devuelve un arraylist vacio
 
     @PostMapping
     public Nota crearNota(@RequestBody Nota nota){
