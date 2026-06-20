@@ -1,5 +1,10 @@
+package com.mentecolmena.backend.ia;
 
+public abstract class PromptBase implements GenerablePorIA {
 
-public class PromptBase {
+    protected String rolSistema;
 
+    public PromptBase(String rolSistema) {
+        this.rolSistema = rolSistema;
+    }
 }

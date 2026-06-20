@@ -1,4 +1,4 @@
-package com.mentecolmena.backend.ia
+package com.mentecolmena.backend.ia;
 
 public interface GenerablePorIA {
 
