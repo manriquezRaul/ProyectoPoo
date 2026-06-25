@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -158,6 +159,7 @@ function BrandingPanel() {
 // ─── Auth Form (right panel) ──────────────────────────────────────────────────
 
 export default function App() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -165,6 +167,11 @@ export default function App() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const isLogin = mode === "login";
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    navigate("/flujo");
+  };
 
   return (
     <main
@@ -206,7 +213,7 @@ export default function App() {
 
           {/* Form */}
           <form
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSubmit}
             className="flex flex-col gap-[20px]"
             noValidate
           >
@@ -332,7 +339,13 @@ export default function App() {
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               type="button"
-              onClick={() => setMode(isLogin ? "signup" : "login")}
+              onClick={() => {
+                if (isLogin) {
+                  navigate("/register");
+                  return;
+                }
+                navigate("/login");
+              }}
               className="font-[600] text-[#2563EB] hover:text-[#1d4ed8] hover:underline underline-offset-[3px] transition-colors duration-150 cursor-pointer bg-transparent border-none p-0"
             >
               {isLogin ? "Sign up" : "Sign in"}

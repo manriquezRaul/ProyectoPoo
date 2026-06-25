@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { type FormEvent } from "react";
 
 // MenteColmena — Register / Sign Up — Pixel-Perfect Layout
 // All spacing, sizing, color, and typography values are explicit.
@@ -315,9 +316,13 @@ function BrandingPanel() {
 // Right 50% · bg-white · centered column · max-w-[448px] form container
 
 function RegisterForm() {
-  const navigate         = useNavigate();
-  const handleSubmit     = () => {}; // wire: POST /api/auth/register
-  const handleSignInNav  = () => navigate("/login");
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    navigate("/flujo");
+  };
+  const handleSignInNav = () => navigate("/login");
 
   return (
     <section
