@@ -2952,7 +2952,7 @@ export default function App() {
             <button
               onClick={() => setDarkMode(!darkMode)}
               aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 shadow-sm transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-sm transition"
             >
               <span className={`transition-all ${darkMode ? "opacity-40 scale-90" : "opacity-100"}`}>
                 <Sun className="w-3.5 h-3.5 text-amber-500" />
