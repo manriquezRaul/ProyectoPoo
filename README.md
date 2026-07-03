@@ -12,7 +12,7 @@
 
 ---
 
-## 📋 Tabla de Contenidos
+##  Tabla de Contenidos
 1. [Descripción General](#1-descripción-general)
 2. [Arquitectura y Tecnologías](#2-arquitectura-y-tecnologías)
 3. [Estructura del Monorepo](#3-estructura-del-monorepo)
@@ -42,23 +42,23 @@
 
 El sistema sigue una arquitectura moderna desacoplada en formato de Monorepo, separando la interfaz de usuario de la lógica de negocio y persistencia:
 
-### 💻 Frontend
+### Frontend
 *   **React.js (v18.3.1)**: Biblioteca principal para la construcción de una interfaz de usuario reactiva y basada en componentes declarativos.
 *   **Vite (v6.4.3)**: Herramienta de compilación y servidor de desarrollo ultra-rápido de última generación.
 *   **Tailwind CSS (v4.0)**: Framework CSS adaptado directamente en el pipeline de Vite a través de `@tailwindcss/vite` para estilos modernos, responsivos y fluidos.
 *   **Fetch API**: Consumo nativo de servicios REST mediante llamadas asíncronas asiladas, integradas bajo el proxy de desarrollo de Vite para evitar problemas de CORS.
 *   **Radix UI / Lucide React / Recharts**: Primitivas de UI accesibles, set de íconos vectoriales de alta fidelidad y gráficos interactivos para el dashboard.
 
-### ⚙️ Backend
+###  Backend
 *   **Java 21 (Spring Boot 4.0.6)**: Framework robusto para el desarrollo de la API REST empresarial.
 *   **Paradigma de Programación Orientada a Objetos (POO)**: Implementación estricta de patrones de diseño, modularidad y polimorfismo. Por ejemplo, en la generación de contenido por IA, se utiliza una abstracción polimórfica (`GenerablePorIA`) con implementaciones concretas (`PromptQuiz`, `PromptFlashcard`, `PromptTrueFalse`) para modelar diferentes dinámicas de estudio.
 *   **Apache PDFBox / Apache POI**: Motores de lectura y parsing para extraer texto de archivos PDF y documentos Word (.docx) cargados por el usuario.
 
-### 🗄️ Base de Datos
+###  Base de Datos
 *   **MongoDB**: Base de datos documental NoSQL flexible que almacena de manera nativa la información de los usuarios, notas, cuadernos, metas y resultados de quizzes en formato JSON/BSON.
 *   **Spring Data MongoDB**: Abstracción de persistencia que facilita el mapeo objeto-documento mediante repositorios de datos declarativos.
 
-### 🤖 Inteligencia Artificial
+###  Inteligencia Artificial
 *   **Google Gemini API (`gemini-1.5-flash`)**: Integración directa con el modelo de lenguaje de Google para generar contenido académico estructurado en formato JSON nativo y evaluar de forma automatizada las respuestas del alumno.
 
 ---
