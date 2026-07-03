@@ -18,8 +18,8 @@
 3. [Estructura del Monorepo](#3-estructura-del-monorepo)
 4. [Requisitos Previos](#4-requisitos-previos)
 5. [Instrucciones de Instalación y Despliegue Local](#5-instrucciones-de-instalación-y-despliegue-local)
-6. [🔒 Variables de Entorno y Seguridad](#6--variables-de-entorno-y-seguridad)
-7. [👥 Créditos / Equipo de Desarrollo](#7--créditos--equipo-de-desarrollo)
+6. [ Variables de Entorno y Seguridad](#6--variables-de-entorno-y-seguridad)
+7. [ Créditos / Equipo de Desarrollo](#7--créditos--equipo-de-desarrollo)
 
 ---
 
@@ -167,7 +167,7 @@ cd ProyectoPoo
 
 ---
 
-## 6. 🔒 Variables de Entorno y Seguridad
+## 6.  Variables de Entorno y Seguridad
 
 El backend utiliza la API oficial de Google Gemini para toda la lógica de inteligencia artificial. Por motivos de seguridad y buenas prácticas de desarrollo industrial, **nunca se deben incluir credenciales o llaves API codificadas directamente (hardcoded) en el código fuente**.
 
@@ -205,16 +205,15 @@ El proyecto incluye un archivo `.gitignore` a nivel raíz que bloquea la subida 
 
 ---
 
-## 7. 👥 Créditos / Equipo de Desarrollo
+## 7.  Créditos / Equipo de Desarrollo
 
 Este proyecto ha sido desarrollado en el marco académico de la **Universidad de La Frontera (UFRO)** por el siguiente equipo de trabajo:
 
 *   **Raul Manriquez** ─ *Frontend & Git Maestro*
-    *   Diseño e implementación de la interfaz de usuario en React, gráficos del Dashboard, flujos de interacción e integración del proxy de red. Responsable del control de versiones y flujos de trabajo en Git.
+    *   Diseño e implementación de la interfaz de usuario y pantallas en React, gráficos del Dashboard.
 *   **Catalina** ─ *Backend & MongoDB*
     *   Diseño y desarrollo de la arquitectura del servidor, controladores REST, lógica de servicios de negocio y estructuración de modelos documentales en base de datos NoSQL MongoDB.
 *   **Bianca** ─ *Integración de API de IA y Prompts*
-    *   Ingeniería de prompts estructurados, control de flujo y parser de respuestas JSON en el microservicio de Gemini, modelado de evaluación automatizada mediante rúbricas de estudio.
+    *   Ingeniería de prompts estructurados , control de flujo y servicios .
 
 ---
-*Desarrollado con fines educativos y de innovación metodológica de estudio activo 🎓.*
