@@ -37,10 +37,31 @@ public class IaController {
         String dificultad = (String) payload.get("dificultad");
         int cantidadPreguntas = payload.containsKey("cantidadPreguntas") ? ((Number) payload.get("cantidadPreguntas")).intValue() : 5;
         String scope = (String) payload.get("scope");
+        
+        List<String> customNoteIds = (List<String>) payload.get("noteIds");
+        List<String> customNotebookIds = (List<String>) payload.get("notebookIds");
 
         List<Nota> notasAProcesar = new ArrayList<>();
 
-        if (notebookId != null && !notebookId.isBlank()) {
+        if (customNoteIds != null && !customNoteIds.isEmpty()) {
+            Iterable<Nota> notesIterable = notaRepository.findAllById(customNoteIds);
+            notesIterable.forEach(notasAProcesar::add);
+        }
+
+        if (customNotebookIds != null && !customNotebookIds.isEmpty()) {
+            for (String nbId : customNotebookIds) {
+                Optional<Cuaderno> cuadernoOpt = cuadernoRepository.findById(nbId);
+                if (cuadernoOpt.isPresent()) {
+                    List<String> noteIds = cuadernoOpt.get().getNoteIds();
+                    if (noteIds != null && !noteIds.isEmpty()) {
+                        Iterable<Nota> notesIterable = notaRepository.findAllById(noteIds);
+                        notesIterable.forEach(notasAProcesar::add);
+                    }
+                }
+            }
+        }
+
+        if (notasAProcesar.isEmpty() && notebookId != null && !notebookId.isBlank()) {
             Optional<Cuaderno> cuadernoOpt = cuadernoRepository.findById(notebookId);
             if (cuadernoOpt.isPresent()) {
                 List<String> noteIds = cuadernoOpt.get().getNoteIds();

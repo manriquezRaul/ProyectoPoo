@@ -148,12 +148,93 @@ public class DashboardService {
 
     private List<DashboardData.SubjectStat> buildStudySubjects() {
         List<DashboardData.SubjectStat> subjects = new ArrayList<>();
-        subjects.add(new DashboardData.SubjectStat("Object-Oriented\nProgramming", (int) notaRepository.count(), 72));
-        subjects.add(new DashboardData.SubjectStat("Databases", 5, 58));
-        subjects.add(new DashboardData.SubjectStat("Calculus", 4, 45));
-        subjects.add(new DashboardData.SubjectStat("Data Structures", 4, 61));
-        subjects.add(new DashboardData.SubjectStat("Linear Algebra", 2, 30));
-        subjects.add(new DashboardData.SubjectStat("Discrete Math", 1, 20));
+        List<Nota> allNotes = notaRepository.findAll();
+        List<QuizResult> allQuizzes = quizResultService.getQuizzesSortedByCreatedAtDesc();
+
+        // 1. Object-Oriented Programming (OOP)
+        long oopNotes = allNotes.stream()
+                .filter(n -> n.getSubject() != null && ("oop".equalsIgnoreCase(n.getSubject().trim()) || "object-oriented programming".equalsIgnoreCase(n.getSubject().trim()) || "object-oriented\nprogramming".equalsIgnoreCase(n.getSubject().trim())))
+                .count();
+        double oopAvg = 0;
+        if (oopNotes > 0) {
+            oopAvg = allQuizzes.stream()
+                    .filter(q -> q.getSubject() != null && (q.getSubject().toLowerCase().contains("oop") || q.getSubject().toLowerCase().contains("object-oriented")))
+                    .mapToInt(QuizResult::getScore)
+                    .average()
+                    .orElse(0);
+        }
+
+        // 2. Databases
+        long dbNotes = allNotes.stream()
+                .filter(n -> n.getSubject() != null && "databases".equalsIgnoreCase(n.getSubject().trim()))
+                .count();
+        double dbAvg = 0;
+        if (dbNotes > 0) {
+            dbAvg = allQuizzes.stream()
+                    .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("database"))
+                    .mapToInt(QuizResult::getScore)
+                    .average()
+                    .orElse(0);
+        }
+
+        // 3. Calculus
+        long calcNotes = allNotes.stream()
+                .filter(n -> n.getSubject() != null && "calculus".equalsIgnoreCase(n.getSubject().trim()))
+                .count();
+        double calcAvg = 0;
+        if (calcNotes > 0) {
+            calcAvg = allQuizzes.stream()
+                    .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("calculus"))
+                    .mapToInt(QuizResult::getScore)
+                    .average()
+                    .orElse(0);
+        }
+
+        // 4. Data Structures
+        long dsNotes = allNotes.stream()
+                .filter(n -> n.getSubject() != null && "data structures".equalsIgnoreCase(n.getSubject().trim()))
+                .count();
+        double dsAvg = 0;
+        if (dsNotes > 0) {
+            dsAvg = allQuizzes.stream()
+                    .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("data structure"))
+                    .mapToInt(QuizResult::getScore)
+                    .average()
+                    .orElse(0);
+        }
+
+        // 5. Linear Algebra
+        long laNotes = allNotes.stream()
+                .filter(n -> n.getSubject() != null && "linear algebra".equalsIgnoreCase(n.getSubject().trim()))
+                .count();
+        double laAvg = 0;
+        if (laNotes > 0) {
+            laAvg = allQuizzes.stream()
+                    .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("linear algebra"))
+                    .mapToInt(QuizResult::getScore)
+                    .average()
+                    .orElse(0);
+        }
+
+        // 6. Discrete Math
+        long dmNotes = allNotes.stream()
+                .filter(n -> n.getSubject() != null && "discrete math".equalsIgnoreCase(n.getSubject().trim()))
+                .count();
+        double dmAvg = 0;
+        if (dmNotes > 0) {
+            dmAvg = allQuizzes.stream()
+                    .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("discrete math"))
+                    .mapToInt(QuizResult::getScore)
+                    .average()
+                    .orElse(0);
+        }
+
+        subjects.add(new DashboardData.SubjectStat("Object-Oriented\nProgramming", (int) oopNotes, (int) Math.round(oopAvg)));
+        subjects.add(new DashboardData.SubjectStat("Databases", (int) dbNotes, (int) Math.round(dbAvg)));
+        subjects.add(new DashboardData.SubjectStat("Calculus", (int) calcNotes, (int) Math.round(calcAvg)));
+        subjects.add(new DashboardData.SubjectStat("Data Structures", (int) dsNotes, (int) Math.round(dsAvg)));
+        subjects.add(new DashboardData.SubjectStat("Linear Algebra", (int) laNotes, (int) Math.round(laAvg)));
+        subjects.add(new DashboardData.SubjectStat("Discrete Math", (int) dmNotes, (int) Math.round(dmAvg)));
         return subjects;
     }
 }
