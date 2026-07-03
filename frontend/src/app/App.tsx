@@ -893,7 +893,10 @@ function NoteCard({ note, onOpen, onEdit, onDelete, onTogglePin }: { note: any; 
   const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
 
   return (
-    <article className="group bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 flex flex-col gap-3 cursor-pointer relative">
+    <article
+      onClick={() => onOpen?.()}
+      className="group bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 flex flex-col gap-3 cursor-pointer relative"
+    >
       {/* Pin button */}
       <button
         onClick={(e) => {
@@ -932,14 +935,11 @@ function NoteCard({ note, onOpen, onEdit, onDelete, onTogglePin }: { note: any; 
       </div>
 
       {/* Title */}
-      <button
-        onClick={() => { onOpen?.(); }}
-        className="text-left font-bold"
-      >
+      <div className="text-left font-bold">
         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {title}
         </h3>
-      </button>
+      </div>
 
       {/* Preview */}
       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
@@ -958,14 +958,20 @@ function NoteCard({ note, onOpen, onEdit, onDelete, onTogglePin }: { note: any; 
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
           <button
-            onClick={() => onEdit?.()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit?.();
+            }}
             className="p-1 rounded-lg hover:bg-muted transition"
             aria-label="Edit note"
           >
             <Edit3 className="w-3 h-3 text-muted-foreground" />
           </button>
           <button
-            onClick={() => onDelete?.()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.();
+            }}
             className="p-1 rounded-lg hover:bg-red-50 transition"
             aria-label="Delete note"
           >
@@ -3445,11 +3451,13 @@ const VIEWER_QUIZ = [
 // Note Viewer Screen
 // ─────────────────────────────────────────────
 
-function NoteViewerScreen({ onBack, darkMode, context = "notes", note, onDelete, onSave }: {
+function NoteViewerScreen({ onBack, darkMode, context = "notes", note, notes = [], onSelectNote, onDelete, onSave }: {
   onBack: () => void;
   darkMode: boolean;
   context?: "notes" | "study";
   note: any;
+  notes?: any[];
+  onSelectNote?: (id: string) => void;
   onDelete?: (id: string) => Promise<boolean>;
   onSave?: (note: any, id?: string) => Promise<boolean>;
 }) {
@@ -3534,23 +3542,47 @@ function NoteViewerScreen({ onBack, darkMode, context = "notes", note, onDelete,
 
             {/* Note list */}
             <nav className="flex-1 overflow-y-auto py-2" aria-label="Notes in notebook">
-              {(context === "study" ? LINKED_NOTES.map((n, i) => ({
-                id: n.id, title: n.title, snippet: n.preview, active: i === 3,
-              })) : VIEWER_NOTE_LIST).map((note) => (
+              {(notes && notes.length > 0
+                ? notes.map((n) => ({
+                    id: n.id,
+                    title: n.titulo || n.title || "Untitled",
+                    snippet: n.contenido || n.preview || "",
+                    active: note && n.id === note.id,
+                  }))
+                : (context === "study"
+                  ? LINKED_NOTES.map((n, i) => ({
+                      id: String(n.id),
+                      title: n.title,
+                      snippet: n.preview,
+                      active: note ? n.title === (note.titulo || note.title) : i === 3,
+                    }))
+                  : VIEWER_NOTE_LIST.map((n) => ({
+                      id: String(n.id),
+                      title: n.title,
+                      snippet: n.snippet,
+                      active: note ? n.title === (note.titulo || note.title) : n.active,
+                    }))
+                  )
+              ).map((nItem) => (
                 <button
-                  key={note.id}
-                  className={`w-full text-left flex items-start gap-2.5 px-3 py-2.5 mx-1 rounded-xl transition-all ${note.active
+                  key={nItem.id}
+                  onClick={() => {
+                    if (notes && notes.length > 0) {
+                      onSelectNote?.(nItem.id);
+                    }
+                  }}
+                  className={`w-full text-left flex items-start gap-2.5 px-3 py-2.5 mx-1 rounded-xl transition-all ${nItem.active
                     ? "bg-primary/10 border border-primary/20"
                     : "hover:bg-muted border border-transparent"
                     }`}
                   style={{ width: "calc(100% - 8px)" }}
                 >
-                  <FileText className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${note.active ? "text-primary" : "text-muted-foreground"}`} />
+                  <FileText className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${nItem.active ? "text-primary" : "text-muted-foreground"}`} />
                   <div className="min-w-0">
-                    <p className={`text-[11px] font-semibold leading-snug ${note.active ? "text-primary" : "text-foreground"}`}>
-                      {note.title}
+                    <p className={`text-[11px] font-semibold leading-snug ${nItem.active ? "text-primary" : "text-foreground"}`}>
+                      {nItem.title}
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{note.snippet}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{nItem.snippet}</p>
                   </div>
                 </button>
               ))}
@@ -4462,12 +4494,18 @@ export default function App() {
 
   // Note viewer is a full-page override — no shared header
   if (isNoteViewer) {
+    const activeCuaderno = cuadernos.find((c) => c.id === selectedCuadernoId);
+    const viewerNotesList = noteViewerSource === "study" && activeCuaderno
+      ? notes.filter((n) => activeCuaderno.noteIds?.includes(n.id))
+      : notes;
     return (
       <NoteViewerScreen
         onBack={() => setActiveNav(noteViewerSource === "study" ? "Study Notebooks" : "My Notes")}
         darkMode={darkMode}
         context={noteViewerSource}
         note={selectedNote}
+        notes={viewerNotesList}
+        onSelectNote={(id) => setSelectedNoteId(id)}
         onDelete={deleteNote}
         onSave={saveNote}
       />
