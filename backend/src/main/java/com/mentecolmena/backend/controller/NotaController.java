@@ -1,10 +1,15 @@
 package com.mentecolmena.backend.controller;
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.List;
 
 import com.mentecolmena.backend.model.Nota;
 import com.mentecolmena.backend.service.NotaService;
+import com.mentecolmena.backend.service.FileParserService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -12,11 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class NotaController {
 
     private final NotaService notaService;
-    public NotaController(NotaService notaService){
-        this.notaService=notaService;
+    private final FileParserService fileParserService;
+
+    public NotaController(NotaService notaService, FileParserService fileParserService) {
+        this.notaService = notaService;
+        this.fileParserService = fileParserService;
     }
-
-
 
     @GetMapping
     public List<Nota> obtenerNotas() {
@@ -43,4 +49,24 @@ public class NotaController {
         return notaService.actualizarNota(id,nota);
     }
 
+    @PostMapping("/import")
+    public ResponseEntity<?> importarArchivo(@RequestParam("file") MultipartFile file) {
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String contenidoExtraido = fileParserService.extractText(file);
+            
+            Nota nuevaNota = new Nota();
+            nuevaNota.setTitulo(originalFilename != null ? originalFilename : "Nota Importada");
+            nuevaNota.setContenido(contenidoExtraido);
+            nuevaNota.setSubject("General");
+            
+            Nota notaGuardada = notaService.guardar(nuevaNota);
+            return ResponseEntity.ok(notaGuardada);
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al procesar el archivo: " + e.getMessage());
+        }
+    }
 }

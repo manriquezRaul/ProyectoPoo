@@ -982,12 +982,13 @@ function NoteCard({ note, onOpen, onEdit, onDelete, onTogglePin }: { note: any; 
 // ─────────────────────────────────────────────
 
 type UploadedFile = {
-  id: number;
+  id: string;
   name: string;
   size: string;
   type: "pdf" | "image" | "video" | "doc";
   progress: number;
   done: boolean;
+  error?: boolean;
 };
 
 const FILE_ICON: Record<UploadedFile["type"], React.ReactNode> = {
@@ -997,25 +998,146 @@ const FILE_ICON: Record<UploadedFile["type"], React.ReactNode> = {
   doc: <File className="w-4 h-4 text-primary" />,
 };
 
-const MOCK_FILES: UploadedFile[] = [
-  { id: 1, name: "Sistemas_Distribuidos.pdf", size: "2.4 MB", type: "pdf", progress: 65, done: false },
-  { id: 2, name: "OOP_Class_Diagram.png", size: "840 KB", type: "image", progress: 100, done: true },
-  { id: 3, name: "Lecture_Notes_Databases.docx", size: "1.1 MB", type: "doc", progress: 30, done: false },
-];
-
-function ImportModal({ onClose }: { onClose: () => void }) {
+function ImportModal({ onClose, onUploadSuccess }: { onClose: () => void; onUploadSuccess?: (importedNote?: any) => void }) {
   const [isDragging, setIsDragging] = useState(false);
-  const [files, setFiles] = useState<UploadedFile[]>(MOCK_FILES);
+  const [files, setFiles] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const getFileType = (fileName: string): UploadedFile["type"] => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (ext === 'pdf') return 'pdf';
+    if (['doc', 'docx'].includes(ext || '')) return 'doc';
+    if (['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(ext || '')) return 'image';
+    if (['mp4', 'mov', 'avi', 'mkv'].includes(ext || '')) return 'video';
+    return 'doc';
+  };
+
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  };
 
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = () => setIsDragging(false);
+
+  const uploadFile = (file: File, fileId: string) => {
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append("file", file);
+
+    xhr.open("POST", "/api/notas/import", true);
+
+    // Track upload progress
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setFiles((prev) =>
+          prev.map((f) => (f.id === fileId ? { ...f, progress: percent } : f))
+        );
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        let importedNote = null;
+        try {
+          importedNote = JSON.parse(xhr.responseText);
+        } catch (e) {
+          console.error(e);
+        }
+
+        setFiles((prev) =>
+          prev.map((f) => (f.id === fileId ? { ...f, done: true, progress: 100 } : f))
+        );
+        if (onUploadSuccess) {
+          onUploadSuccess(importedNote);
+        }
+      } else {
+        setFiles((prev) =>
+          prev.map((f) => (f.id === fileId ? { ...f, error: true, progress: 0 } : f))
+        );
+        toast.error(`Error uploading ${file.name}: ${xhr.responseText || "Unknown error"}`);
+      }
+    };
+
+    xhr.onerror = () => {
+      setFiles((prev) =>
+        prev.map((f) => (f.id === fileId ? { ...f, error: true, progress: 0 } : f))
+      );
+      toast.error(`Network error uploading ${file.name}`);
+    };
+
+    xhr.send(formData);
+  };
+
+  const processFiles = (fileList: FileList) => {
+    const allowedExtensions = ["pdf", "docx", "doc", "txt", "md"];
+    const addedFiles: UploadedFile[] = [];
+
+    Array.from(fileList).forEach((file) => {
+      const ext = file.name.split('.').pop()?.toLowerCase() || "";
+      if (!allowedExtensions.includes(ext)) {
+        toast.error(`Format .${ext} is not supported. Please upload PDF, DOCX, TXT or MD.`);
+        return;
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error(`File ${file.name} exceeds the 50MB size limit.`);
+        return;
+      }
+
+      const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const newFile: UploadedFile = {
+        id: fileId,
+        name: file.name,
+        size: formatBytes(file.size),
+        type: getFileType(file.name),
+        progress: 0,
+        done: false,
+      };
+
+      addedFiles.push(newFile);
+      uploadFile(file, fileId);
+    });
+
+    if (addedFiles.length > 0) {
+      setFiles((prev) => [...prev, ...addedFiles]);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    // TODO: process e.dataTransfer.files
+    if (e.dataTransfer.files) {
+      processFiles(e.dataTransfer.files);
+    }
   };
+
   const handleBrowse = () => inputRef.current?.click();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      processFiles(e.target.files);
+    }
+  };
+
+  const handleProcessWithAI = () => {
+    const completedCount = files.filter(f => f.done).length;
+    if (completedCount > 0) {
+      toast.success(`${completedCount} file(s) imported successfully!`);
+      onClose();
+    } else if (files.length > 0 && files.every(f => f.error)) {
+      toast.error("No files were successfully imported.");
+    } else if (files.length > 0) {
+      toast.info("Files are still importing. Please wait.");
+    } else {
+      toast.info("Please select or drop files to import.");
+    }
+  };
 
   return (
     /* Backdrop */
@@ -1038,7 +1160,7 @@ function ImportModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground">Import Study Files</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">PDF, DOCX, PNG, MP4 — max 50 MB each</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">PDF, DOCX, TXT, MD — max 50 MB each</p>
             </div>
           </div>
           <button
@@ -1068,9 +1190,9 @@ function ImportModal({ onClose }: { onClose: () => void }) {
               ref={inputRef}
               type="file"
               multiple
-              accept=".pdf,.docx,.png,.jpg,.mp4"
+              accept=".pdf,.docx,.doc,.txt,.md"
               className="sr-only"
-              onChange={() => {/* TODO: handle file input */ }}
+              onChange={handleFileChange}
             />
             {/* Cloud icon */}
             <div className={`p-4 rounded-2xl transition-colors ${isDragging ? "bg-primary/15" : "bg-muted"}`}>
@@ -1086,7 +1208,7 @@ function ImportModal({ onClose }: { onClose: () => void }) {
               </p>
             </div>
             <div className="flex items-center gap-2 mt-1">
-              {["PDF", "DOCX", "PNG", "MP4"].map((ext) => (
+              {["PDF", "DOCX", "TXT", "MD"].map((ext) => (
                 <span key={ext} className="text-[10px] font-semibold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
                   {ext}
                 </span>
@@ -1111,18 +1233,18 @@ function ImportModal({ onClose }: { onClose: () => void }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1.5">
                         <p className="text-xs font-semibold text-foreground truncate max-w-[200px]">{f.name}</p>
-                        <span className={`text-[10px] font-bold shrink-0 ml-2 ${f.done ? "text-accent" : "text-muted-foreground"}`}>
-                          {f.done ? "Done ✓" : `${f.progress}%`}
+                        <span className={`text-[10px] font-bold shrink-0 ml-2 ${f.error ? "text-red-400" : f.done ? "text-accent" : "text-muted-foreground"}`}>
+                          {f.error ? "Error ✗" : f.done ? "Done ✓" : `${f.progress}%`}
                         </span>
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${f.done ? "bg-accent" : "bg-primary"}`}
+                          className={`h-full rounded-full transition-all ${f.error ? "bg-red-400" : f.done ? "bg-accent" : "bg-primary"}`}
                           style={{ width: `${f.progress}%` }}
                         />
                       </div>
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        {f.size} · {f.done ? "Upload complete" : `Uploading...`}
+                        {f.size} · {f.error ? "Upload failed" : f.done ? "Upload complete" : `Uploading...`}
                       </p>
                     </div>
                     {/* Remove */}
@@ -2689,7 +2811,17 @@ function CreateNoteMain({ onSave }: { onSave: (note: { titulo: string; contenido
         </span>
       </div>
 
-      {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+      {showImport && (
+        <ImportModal
+          onClose={() => setShowImport(false)}
+          onUploadSuccess={(importedNote?: any) => {
+            if (importedNote) {
+              setTitle(importedNote.titulo || "");
+              setBody(importedNote.contenido || "");
+            }
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -4405,7 +4537,17 @@ export default function App() {
       {/* Body columns */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
-        {isCreateNote ? <CreateNoteMain onSave={handleCreateNote} /> :
+        {isCreateNote ? (
+          <CreateNoteMain
+            onSave={async (note) => {
+              const success = await saveNote(note);
+              if (success) {
+                toast.success("Note created successfully!");
+                setActiveNav("My Notes");
+              }
+            }}
+          />
+        ) :
           isHub ? <StudyHubMain selectedMode={hubMode} setSelectedMode={setHubMode} onLaunch={handleLaunchSession} /> :
             isStudy ? (
               <StudyNotebooksMain
@@ -4444,7 +4586,7 @@ export default function App() {
       </div>
 
       {/* Import modal — rendered outside columns so it overlays everything */}
-      {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+      {showImport && <ImportModal onClose={() => setShowImport(false)} onUploadSuccess={loadNotes} />}
       <Toaster position="top-right" richColors />
     </div>
   );
