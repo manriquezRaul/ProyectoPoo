@@ -5,7 +5,6 @@ import com.mentecolmena.backend.model.Nota;
 import com.mentecolmena.backend.model.QuizResult;
 import com.mentecolmena.backend.model.SessionDay;
 import com.mentecolmena.backend.repository.NotaRepository;
-import com.mentecolmena.backend.repository.QuizResultRepository;
 import com.mentecolmena.backend.repository.SessionDayRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +18,13 @@ import java.util.Optional;
 @Service
 public class DashboardService {
     private final NotaRepository notaRepository;
-    private final QuizResultRepository quizResultRepository;
+    private final QuizResultService quizResultService;
     private final SessionDayRepository sessionDayRepository;
 
-    public DashboardService(NotaRepository notaRepository, QuizResultRepository quizResultRepository, SessionDayRepository sessionDayRepository) {
+    public DashboardService(NotaRepository notaRepository, QuizResultService quizResultService,
+            SessionDayRepository sessionDayRepository) {
         this.notaRepository = notaRepository;
-        this.quizResultRepository = quizResultRepository;
+        this.quizResultService = quizResultService;
         this.sessionDayRepository = sessionDayRepository;
     }
 
@@ -35,7 +35,7 @@ public class DashboardService {
         data.setTotalNotes(totalNotes);
         data.setNotesWeeklyDelta(6);
 
-        List<QuizResult> recentQuizzes = quizResultRepository.findTop5ByOrderByCreatedAtDesc();
+        List<QuizResult> recentQuizzes = quizResultService.findTop5ByOrderByCreatedAtDesc();
         data.setRecentQuizzes(recentQuizzes);
         data.setQuizCount(recentQuizzes.size());
         data.setAccuracyValue(calculateAccuracy(recentQuizzes));
@@ -67,37 +67,80 @@ public class DashboardService {
     }
 
     public QuizResult saveQuizResult(QuizResult quizResult) {
-        if (quizResult.getCreatedAt() == null) {
-            quizResult.setCreatedAt(Instant.now());
-        }
-        return quizResultRepository.save(quizResult);
+        return quizResultService.saveQuizResult(quizResult);
     }
 
     private int calculateAccuracy(List<QuizResult> recentQuizzes) {
-        if (recentQuizzes.isEmpty()) return 0;
+        if (recentQuizzes.isEmpty())
+            return 0;
         return (int) recentQuizzes.stream().mapToInt(QuizResult::getScore).average().orElse(0);
     }
 
     private int calculateWeeklyCompletion(List<QuizResult> recentQuizzes) {
-        if (recentQuizzes.isEmpty()) return 0;
+        if (recentQuizzes.isEmpty())
+            return 0;
         long met = recentQuizzes.stream().filter(QuizResult::isGoalMet).count();
         return (int) ((met * 100.0) / recentQuizzes.size());
     }
 
     private int calculateStreak(List<SessionDay> days) {
-        if (days.isEmpty()) return 0;
-        return (int) days.stream().filter(d -> d.getSessionsStarted() > 0).count();
+        if (days.isEmpty())
+            return 0;
+        
+        java.util.Set<LocalDate> activeDates = days.stream()
+                .filter(d -> d.getSessionsStarted() > 0)
+                .map(d -> {
+                    try {
+                        return LocalDate.parse(d.getDate());
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        
+        if (activeDates.isEmpty()) {
+            return 0;
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+        
+        // If today is not active and yesterday is not active, streak is 0
+        if (!activeDates.contains(today) && !activeDates.contains(yesterday)) {
+            return 0;
+        }
+        
+        LocalDate current = activeDates.contains(today) ? today : yesterday;
+        int streak = 0;
+        while (activeDates.contains(current)) {
+            streak++;
+            current = current.minusDays(1);
+        }
+        return streak;
     }
 
     private List<DashboardData.DailyActivity> buildWeeklyActivity(List<SessionDay> days) {
         List<DashboardData.DailyActivity> result = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE");
         LocalDate now = LocalDate.now();
+        List<Nota> allNotes = notaRepository.findAll();
         for (int i = 6; i >= 0; i--) {
             LocalDate day = now.minusDays(i);
             String label = day.format(formatter);
-            int notes = notaRepository.findAll().stream().filter(n -> n.getCreatedAt() != null && n.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toLocalDate().equals(day)).mapToInt(n -> 1).sum();
-            int quizzes = days.stream().filter(d -> LocalDate.parse(d.getDate()).equals(day)).mapToInt(SessionDay::getSessionsStarted).sum();
+            int notes = (int) allNotes.stream()
+                    .filter(n -> n.getCreatedAt() != null
+                            && n.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toLocalDate().equals(day))
+                    .count();
+            int quizzes = days.stream()
+                    .filter(d -> {
+                        try {
+                            return LocalDate.parse(d.getDate()).equals(day);
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    })
+                    .mapToInt(SessionDay::getSessionsStarted).sum();
             result.add(new DashboardData.DailyActivity(label, notes, quizzes));
         }
         return result;
