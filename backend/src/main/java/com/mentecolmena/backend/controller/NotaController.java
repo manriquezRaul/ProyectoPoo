@@ -1,4 +1,5 @@
 package com.mentecolmena.backend.controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.List;
 
 import com.mentecolmena.backend.model.Nota;
@@ -6,6 +7,7 @@ import com.mentecolmena.backend.service.NotaService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/notas")
 public class NotaController {
 
@@ -29,6 +31,11 @@ public class NotaController {
     @DeleteMapping("/{id}")
     public boolean eliminarNota(@PathVariable String id){
         return notaService.eliminarPorId(id);
+    }
+
+    @GetMapping("/{id}")
+    public Nota obtenerNota(@PathVariable String id){
+        return notaService.obtenerPorId(id).orElse(null);
     }
 
     @PutMapping("/{id}")

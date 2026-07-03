@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Toaster } from "./components/ui/sonner";
+import { toast } from "sonner";
 import {
   Home, BookOpen, Settings, StickyNote, Hexagon,
   Flame, Target, FileText, ChevronRight, Clock,
@@ -27,10 +29,10 @@ import {
 // ─────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { icon: Home,       label: "Home" },
-  { icon: BookOpen,   label: "Study Notebooks" },
+  { icon: Home, label: "Home" },
+  { icon: BookOpen, label: "Study Notebooks" },
   { icon: StickyNote, label: "My Notes" },
-  { icon: Settings,   label: "Settings" },
+  { icon: Settings, label: "Settings" },
 ];
 
 const CURRENT_USER = {
@@ -44,32 +46,32 @@ const CURRENT_USER = {
 // ─────────────────────────────────────────────
 
 const STATS = {
-  streak:   { days: 5,  best: 12, activeDays: 5 },
+  streak: { days: 5, best: 12, activeDays: 5 },
   accuracy: { value: 84, trend: "+4.2%", quizCount: 24 },
-  notes:    { total: 24, weeklyDelta: "+6" },
+  notes: { total: 24, weeklyDelta: "+6" },
 };
 
 const SUBJECTS = [
-  { id: 1, name: "Object-Oriented\nProgramming", notes: 8,  icon: "⬡", progress: 72, bg: "#EFF6FF", border: "#BFDBFE" },
-  { id: 2, name: "Databases",                    notes: 5,  icon: "🗄", progress: 58, bg: "#ECFDF5", border: "#A7F3D0" },
-  { id: 3, name: "Calculus",                      notes: 4,  icon: "∫", progress: 45, bg: "#FEF3C7", border: "#FDE68A" },
-  { id: 4, name: "Data Structures",               notes: 4,  icon: "⟨⟩",progress: 61, bg: "#F5F3FF", border: "#DDD6FE" },
-  { id: 5, name: "Linear Algebra",                notes: 2,  icon: "Σ", progress: 30, bg: "#FFF1F2", border: "#FECDD3" },
-  { id: 6, name: "Discrete Math",                 notes: 1,  icon: "∩", progress: 20, bg: "#F0FDF4", border: "#BBF7D0" },
+  { id: 1, name: "Object-Oriented\nProgramming", notes: 8, icon: "⬡", progress: 72, bg: "#EFF6FF", border: "#BFDBFE" },
+  { id: 2, name: "Databases", notes: 5, icon: "🗄", progress: 58, bg: "#ECFDF5", border: "#A7F3D0" },
+  { id: 3, name: "Calculus", notes: 4, icon: "∫", progress: 45, bg: "#FEF3C7", border: "#FDE68A" },
+  { id: 4, name: "Data Structures", notes: 4, icon: "⟨⟩", progress: 61, bg: "#F5F3FF", border: "#DDD6FE" },
+  { id: 5, name: "Linear Algebra", notes: 2, icon: "Σ", progress: 30, bg: "#FFF1F2", border: "#FECDD3" },
+  { id: 6, name: "Discrete Math", notes: 1, icon: "∩", progress: 20, bg: "#F0FDF4", border: "#BBF7D0" },
 ];
 
 const WEEKLY_GOALS = [
-  { label: "Study Sessions", done: 5,  goal: 7,  color: "#2563EB" },
-  { label: "Quizzes Taken",  done: 4,  goal: 5,  color: "#10B981" },
+  { label: "Study Sessions", done: 5, goal: 7, color: "#2563EB" },
+  { label: "Quizzes Taken", done: 4, goal: 5, color: "#10B981" },
   { label: "Notes Reviewed", done: 12, goal: 15, color: "#8B5CF6" },
 ];
 
 const QUIZ_RESULTS = [
-  { id: 1, subject: "OOP — Inheritance & Polymorphism", score: 94, date: "Today, 2:30 PM",     status: "success", badge: "Excellent"  },
-  { id: 2, subject: "Databases — SQL Joins",            score: 87, date: "Yesterday, 6:15 PM", status: "success", badge: "Great"      },
-  { id: 3, subject: "Calculus — Derivatives",           score: 71, date: "Jun 18, 4:00 PM",    status: "warning", badge: "Good"       },
-  { id: 4, subject: "OOP — Design Patterns",            score: 91, date: "Jun 17, 11:20 AM",   status: "success", badge: "Excellent"  },
-  { id: 5, subject: "Data Structures — Trees",          score: 63, date: "Jun 16, 3:45 PM",    status: "warning", badge: "Needs Work" },
+  { id: 1, subject: "OOP — Inheritance & Polymorphism", score: 94, date: "Today, 2:30 PM", status: "success", badge: "Excellent" },
+  { id: 2, subject: "Databases — SQL Joins", score: 87, date: "Yesterday, 6:15 PM", status: "success", badge: "Great" },
+  { id: 3, subject: "Calculus — Derivatives", score: 71, date: "Jun 18, 4:00 PM", status: "warning", badge: "Good" },
+  { id: 4, subject: "OOP — Design Patterns", score: 91, date: "Jun 17, 11:20 AM", status: "success", badge: "Excellent" },
+  { id: 5, subject: "Data Structures — Trees", score: 63, date: "Jun 16, 3:45 PM", status: "warning", badge: "Needs Work" },
 ];
 
 const WEEKLY_COMPLETION = 71;
@@ -95,12 +97,12 @@ const SUBJECT_FILTERS = [
 type SubjectKey = "OOP" | "Databases" | "Calculus" | "Data Structures" | "Linear Algebra" | "Discrete Math";
 
 const SUBJECT_BADGE: Record<SubjectKey, { bg: string; text: string }> = {
-  "OOP":             { bg: "#EFF6FF", text: "#1D4ED8" },
-  "Databases":       { bg: "#ECFDF5", text: "#065F46" },
-  "Calculus":        { bg: "#FEF3C7", text: "#92400E" },
+  "OOP": { bg: "#EFF6FF", text: "#1D4ED8" },
+  "Databases": { bg: "#ECFDF5", text: "#065F46" },
+  "Calculus": { bg: "#FEF3C7", text: "#92400E" },
   "Data Structures": { bg: "#F5F3FF", text: "#5B21B6" },
-  "Linear Algebra":  { bg: "#FFF1F2", text: "#9F1239" },
-  "Discrete Math":   { bg: "#F0FDF4", text: "#14532D" },
+  "Linear Algebra": { bg: "#FFF1F2", text: "#9F1239" },
+  "Discrete Math": { bg: "#F0FDF4", text: "#14532D" },
 };
 
 const NOTEBOOKS = [
@@ -180,24 +182,24 @@ const NOTEBOOKS = [
 
 const NOTEBOOKS_STATS = [
   { label: "Total Notes", value: "24", color: "#2563EB", bg: "#EFF6FF" },
-  { label: "This Week",   value: "6",  color: "#10B981", bg: "#ECFDF5" },
-  { label: "Pinned",      value: "2",  color: "#8B5CF6", bg: "#F5F3FF" },
+  { label: "This Week", value: "6", color: "#10B981", bg: "#ECFDF5" },
+  { label: "Pinned", value: "2", color: "#8B5CF6", bg: "#F5F3FF" },
 ];
 
 // ─────────────────────────────────────────────
 // Empty Handlers
 // ─────────────────────────────────────────────
 
-const handleSearch          = (_q: string)  => {};
-const handleViewSubject     = (_id: number) => {};
-const handleViewAllSubjects = ()            => {};
-const handleViewAllQuizzes  = ()            => {};
-const handleNotifications   = ()            => {};
-const handleCreateNote      = ()            => {};
-const handleOpenNote        = (_id: number) => { /* wired via onOpenNote prop */ };
-const handleDeleteNote      = (_id: number) => {};
-const handleEditNote        = (_id: number) => {};
-const handleProcessWithAI   = ()            => {};
+const handleSearch = (_q: string) => { };
+const handleViewSubject = (_id: number) => { };
+const handleViewAllSubjects = () => { };
+const handleViewAllQuizzes = () => { };
+const handleNotifications = () => { };
+const handleCreateNote = () => { };
+const handleOpenNote = (_id: number) => { /* wired via onOpenNote prop */ };
+const handleDeleteNote = (_id: number) => { };
+const handleEditNote = (_id: number) => { };
+const handleProcessWithAI = () => { };
 
 // ─────────────────────────────────────────────
 // Shared: Sidebar
@@ -219,11 +221,10 @@ function Sidebar({ activeNav, onNavChange }: { activeNav: string; onNavChange: (
               key={label}
               onClick={() => onNavChange(label)}
               aria-current={isActive ? "page" : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 w-full text-left ${
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 w-full text-left ${isActive
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
               {label}
@@ -285,11 +286,10 @@ function Sidebar({ activeNav, onNavChange }: { activeNav: string; onNavChange: (
           onClick={() => setMenuOpen((o) => !o)}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${
-            menuOpen
-              ? "bg-muted border-primary/30 shadow-sm"
-              : "bg-muted border-border hover:border-primary/20 hover:shadow-sm"
-          }`}
+          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${menuOpen
+            ? "bg-muted border-primary/30 shadow-sm"
+            : "bg-muted border-border hover:border-primary/20 hover:shadow-sm"
+            }`}
         >
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
             <span className="text-xs font-bold text-white">{CURRENT_USER.initials}</span>
@@ -309,8 +309,8 @@ function Sidebar({ activeNav, onNavChange }: { activeNav: string; onNavChange: (
 // Home Screen
 // ─────────────────────────────────────────────
 
-function StreakCard() {
-  const { days, best, activeDays } = STATS.streak;
+function StreakCard({ data }: { data: { days: number; best: number; activeDays: number } }) {
+  const { days, best, activeDays } = data;
   return (
     <article aria-label="Study streak" className="col-span-1 bg-gradient-to-br from-primary to-blue-700 rounded-2xl p-5 text-white shadow-sm">
       <div className="flex items-start justify-between mb-4">
@@ -321,7 +321,7 @@ function StreakCard() {
       <p className="text-sm font-semibold mt-1 text-white/90">Day Study Streak</p>
       <p className="text-xs text-white/60 mt-3">Best: {best} days — keep going!</p>
       <div className="flex gap-1 mt-3">
-        {["M","T","W","T","F","S","S"].map((d, i) => (
+        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
           <div key={i} className={`flex-1 h-1.5 rounded-full ${i < activeDays ? "bg-white" : "bg-white/25"}`} />
         ))}
       </div>
@@ -329,8 +329,8 @@ function StreakCard() {
   );
 }
 
-function AccuracyCard() {
-  const { value, trend, quizCount } = STATS.accuracy;
+function AccuracyCard({ data }: { data: { value: number; trend: string; quizCount: number } }) {
+  const { value, trend, quizCount } = data;
   return (
     <article aria-label="Accuracy rate" className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
@@ -349,8 +349,8 @@ function AccuracyCard() {
   );
 }
 
-function NotesCountCard() {
-  const { total, weeklyDelta } = STATS.notes;
+function NotesCountCard({ data }: { data: { total: number; weeklyDelta: string } }) {
+  const { total, weeklyDelta } = data;
   return (
     <article aria-label="Total notes" className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
@@ -366,8 +366,9 @@ function NotesCountCard() {
   );
 }
 
-function WeeklyActivityChart() {
-  const maxVal = Math.max(...DAILY_NOTES_DATA.map((d) => Math.max(d.notes, d.quizzes)));
+function WeeklyActivityChart({ weeklyActivity }: { weeklyActivity: { day: string; notes: number; quizzes: number }[] }) {
+  const data = weeklyActivity.length ? weeklyActivity : DAILY_NOTES_DATA;
+  const maxVal = Math.max(...data.map((d) => Math.max(d.notes, d.quizzes)));
   const chartH = 120;
   return (
     <section aria-label="Weekly activity" className="bg-card border border-border rounded-2xl p-5 shadow-sm">
@@ -396,18 +397,18 @@ function WeeklyActivityChart() {
           ))}
         </div>
         <div className="absolute inset-x-6 top-0 flex items-end justify-between gap-1" style={{ height: chartH }}>
-          {DAILY_NOTES_DATA.map((d) => (
+          {data.map((d) => (
             <div key={d.day} className="flex-1 flex items-end justify-center gap-0.5 group relative">
               <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card border border-border rounded-lg px-2 py-1 shadow-md text-[10px] text-foreground font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
                 {d.notes} notes · {d.quizzes} quizzes
               </div>
-              <div className="w-full max-w-[14px] rounded-t-[3px] bg-primary" style={{ height: `${(d.notes / maxVal) * chartH}px` }} />
-              <div className="w-full max-w-[14px] rounded-t-[3px] bg-accent" style={{ height: `${(d.quizzes / maxVal) * chartH}px` }} />
+              <div className="w-full max-w-[14px] rounded-t-[3px] bg-primary" style={{ height: `${(d.notes / Math.max(maxVal, 1)) * chartH}px` }} />
+              <div className="w-full max-w-[14px] rounded-t-[3px] bg-accent" style={{ height: `${(d.quizzes / Math.max(maxVal, 1)) * chartH}px` }} />
             </div>
           ))}
         </div>
         <div className="absolute inset-x-6 flex justify-between" style={{ top: chartH + 6 }}>
-          {DAILY_NOTES_DATA.map((d) => (
+          {data.map((d) => (
             <div key={d.day} className="flex-1 text-center text-[11px] text-muted-foreground font-medium">{d.day}</div>
           ))}
         </div>
@@ -416,42 +417,44 @@ function WeeklyActivityChart() {
   );
 }
 
-function HomeMain() {
+function HomeMain({ dashboard }: { dashboard: any }) {
+  const stats = dashboard || {};
+  const subjects = stats.subjects || SUBJECTS;
   return (
     <main className="flex-1 min-w-0 overflow-y-auto px-8 py-7 space-y-8">
       <section aria-label="Welcome header">
         <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Dashboard</p>
         <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Welcome back, Raúl 👋</h1>
-        <p className="text-sm text-muted-foreground mt-1">Friday, June 20, 2026 — You have 3 pending reviews today.</p>
+        <p className="text-sm text-muted-foreground mt-1">Friday, June 20, 2026 — You have {stats.totalSessionsStarted || 0} sessions started this week.</p>
       </section>
       <section aria-label="Study statistics" className="grid grid-cols-3 gap-4">
-        <StreakCard />
-        <AccuracyCard />
-        <NotesCountCard />
+        <StreakCard data={{ days: stats.streakDays || 0, best: stats.bestStreak || 0, activeDays: stats.activeDays || 0 }} />
+        <AccuracyCard data={{ value: stats.accuracyValue || 0, trend: stats.accuracyTrend || "+0%", quizCount: stats.quizCount || 0 }} />
+        <NotesCountCard data={{ total: stats.totalNotes || 0, weeklyDelta: stats.notesWeeklyDelta ? `+${stats.notesWeeklyDelta}` : "+0" }} />
       </section>
-      <WeeklyActivityChart />
+      <WeeklyActivityChart weeklyActivity={stats.weeklyActivity || DAILY_NOTES_DATA} />
       <section aria-label="Study subjects">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-foreground">Study Subjects</h2>
           <button onClick={handleViewAllSubjects} className="text-xs font-semibold text-primary hover:underline">View all</button>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {SUBJECTS.map((s) => (
-            <article key={s.id}>
+          {subjects.map((s: any, index: number) => (
+            <article key={index}>
               <button
-                onClick={() => handleViewSubject(s.id)}
+                onClick={() => handleViewSubject(index)}
                 className="w-full text-left p-4 rounded-2xl border transition-all hover:shadow-md hover:-translate-y-0.5"
-                style={{ background: s.bg, borderColor: s.border }}
+                style={{ background: s.bg || "#f8fafc", borderColor: s.border || "#e2e8f0" }}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-2xl leading-none">{s.icon}</span>
+                  <span className="text-2xl leading-none">{s.icon || "📘"}</span>
                   <span className="text-[10px] font-semibold text-slate-600 bg-white/80 px-2 py-0.5 rounded-full">{s.notes} notes</span>
                 </div>
-                <p className="text-sm font-bold text-slate-800 leading-snug whitespace-pre-line">{s.name}</p>
+                <p className="text-sm font-bold text-slate-800 leading-snug whitespace-pre-line">{s.subject || s.name}</p>
                 <div className="mt-3 h-1 bg-black/10 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-primary/80" style={{ width: `${s.progress}%` }} />
+                  <div className="h-full rounded-full bg-primary/80" style={{ width: `${s.progress || 0}%` }} />
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1">{s.progress}% mastered</p>
+                <p className="text-[10px] text-slate-500 mt-1">{s.progress || 0}% mastered</p>
               </button>
             </article>
           ))}
@@ -461,11 +464,119 @@ function HomeMain() {
   );
 }
 
-function HomePanel() {
-  const radialData = [{ value: WEEKLY_COMPLETION, fill: "#2563EB" }];
+function HomePanel({
+  dashboard,
+  goals = [],
+  onSaveGoal,
+  onDeleteGoal,
+  onDeleteQuiz,
+  onSaveQuiz,
+  notes = [],
+}: {
+  dashboard: any;
+  goals?: any[];
+  onSaveGoal: (goal: any, id?: string) => Promise<boolean>;
+  onDeleteGoal: (id: string) => Promise<boolean>;
+  onDeleteQuiz: (id: string) => Promise<boolean>;
+  onSaveQuiz: (quiz: any) => Promise<boolean>;
+  notes?: any[];
+}) {
+  const stats = dashboard || {};
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [newGoalForm, setNewGoalForm] = useState({ label: "", goal: 5, color: "#2563EB", isCustom: true });
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [newQuizForm, setNewQuizForm] = useState({ subject: "General OOP — Quiz", score: 80 });
+
+  // Calculate dynamic progress for each goal
+  const calculatedGoals = goals.map((g) => {
+    let done = g.manualDone || 0;
+    if (!g.isCustom) {
+      const labelLower = g.label.toLowerCase();
+      if (labelLower.includes("session") || labelLower.includes("sesion") || labelLower.includes("estudio")) {
+        done = (stats.weeklyActivity || []).reduce((acc: number, cur: any) => acc + (cur.quizzes || 0), 0);
+      } else if (labelLower.includes("quiz") || labelLower.includes("cuestionario") || labelLower.includes("evalua")) {
+        done = stats.recentQuizzes?.length || 0;
+      } else if (labelLower.includes("note") || labelLower.includes("nota")) {
+        done = (stats.weeklyActivity || []).reduce((acc: number, cur: any) => acc + (cur.notes || 0), 0);
+      }
+    }
+    return { ...g, done };
+  });
+
+  // Calculate dynamic weekly completion average
+  const totalGoalsCount = calculatedGoals.length;
+  const weeklyCompletion = totalGoalsCount > 0
+    ? Math.round(
+        calculatedGoals.reduce((acc, g) => acc + Math.min(100, (g.done / g.goal) * 100), 0) / totalGoalsCount
+      )
+    : 0;
+
+  const radialData = [{ value: weeklyCompletion, fill: "#2563EB" }];
+  const quizResults = (stats.recentQuizzes || []) as any[];
+
+  const handleCreateGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGoalForm.label.trim()) {
+      toast.error("Please enter a goal label");
+      return;
+    }
+    const success = await onSaveGoal({
+      label: newGoalForm.label,
+      goal: newGoalForm.goal,
+      color: newGoalForm.color,
+      isCustom: newGoalForm.isCustom,
+      manualDone: 0
+    });
+    if (success) {
+      toast.success("Weekly Goal added successfully!");
+      setNewGoalForm({ label: "", goal: 5, color: "#2563EB", isCustom: true });
+    }
+  };
+
+  const handleUpdateGoalTarget = async (goal: any, newTarget: number) => {
+    await onSaveGoal({ ...goal, goal: newTarget }, goal.id);
+  };
+
+  const handleIncrementDone = async (goal: any, increment: number) => {
+    const newDone = Math.max(0, (goal.manualDone || 0) + increment);
+    await onSaveGoal({ ...goal, manualDone: newDone }, goal.id);
+  };
+
+  const handleLogQuiz = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuizForm.subject.trim()) {
+      toast.error("Please enter a subject");
+      return;
+    }
+    const score = Math.max(0, Math.min(100, newQuizForm.score));
+    const success = await onSaveQuiz({
+      subject: newQuizForm.subject,
+      score,
+      date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      status: score >= 70 ? "success" : "warning",
+      badge: score >= 90 ? "Excellent" : score >= 80 ? "Great" : score >= 70 ? "Good" : "Needs Work",
+      goalMet: score >= 70
+    });
+    if (success) {
+      toast.success("Quiz score logged successfully!");
+      setShowQuizModal(false);
+      setNewQuizForm({ subject: "General OOP — Quiz", score: 80 });
+    }
+  };
+
   return (
     <aside aria-label="Activity panel" className="w-72 shrink-0 border-l border-border bg-card flex flex-col h-full overflow-y-auto">
-      <section aria-label="Weekly goals" className="px-5 py-5 border-b border-border">
+      <section aria-label="Weekly goals" className="px-5 py-5 border-b border-border space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Weekly Goals</h3>
+          <button
+            onClick={() => setShowGoalModal(true)}
+            className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            <Edit3 className="w-3 h-3" /> Manage
+          </button>
+        </div>
+
         <div className="relative h-36 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart innerRadius="68%" outerRadius="90%" data={radialData} startAngle={90} endAngle={-270}>
@@ -474,73 +585,292 @@ function HomePanel() {
             </RadialBarChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-2xl font-extrabold text-foreground">{WEEKLY_COMPLETION}%</p>
+            <p className="text-2xl font-extrabold text-foreground">{weeklyCompletion}%</p>
             <p className="text-[10px] text-muted-foreground font-semibold">Goal Met</p>
           </div>
         </div>
-        <ul className="space-y-2.5 mt-2">
-          {WEEKLY_GOALS.map((g) => (
-            <li key={g.label} className="flex items-center gap-2.5">
-              <div className="w-2 h-2 rounded-full shrink-0" style={{ background: g.color }} />
+
+        <ul className="space-y-3 mt-2">
+          {calculatedGoals.map((g) => (
+            <li key={g.id || g.label} className="flex items-center gap-2.5 group/goal">
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: g.color }} />
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[11px] font-medium text-foreground">{g.label}</span>
-                  <span className="text-[11px] font-bold" style={{ color: g.color }}>{g.done}/{g.goal}</span>
+                  <span className="text-[11px] font-medium text-foreground truncate">{g.label}</span>
+                  <span className="text-[11px] font-bold shrink-0" style={{ color: g.color }}>{g.done}/{g.goal}</span>
                 </div>
-                <div className="h-1 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${(g.done / g.goal) * 100}%`, background: g.color }} />
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (g.done / g.goal) * 100)}%`, background: g.color }} />
                 </div>
               </div>
             </li>
           ))}
         </ul>
       </section>
+
       <section aria-label="Recent quizzes" className="flex-1 px-5 py-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-foreground">Recent Quizzes</h3>
-          <button onClick={handleViewAllQuizzes} className="text-[10px] font-semibold text-primary hover:underline">See all</button>
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Recent Quizzes</h3>
+          <button
+            onClick={() => setShowQuizModal(true)}
+            className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            <Plus className="w-3 h-3" /> Log Quiz
+          </button>
         </div>
         <ul className="space-y-2.5">
-          {QUIZ_RESULTS.map((r) => {
-            const ok = r.status === "success";
-            return (
-              <li key={r.id}>
-                <article className="p-3 rounded-xl border border-border bg-background hover:bg-muted/50 transition">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[11px] font-semibold text-foreground leading-snug line-clamp-2">{r.subject}</p>
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <Clock className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
-                        <time className="text-[10px] text-muted-foreground">{r.date}</time>
+          {quizResults.length === 0 ? (
+            <p className="text-[10px] text-muted-foreground leading-relaxed italic text-center py-4">
+              No quizzes completed yet. Link notes and take quizzes under the Study tab!
+            </p>
+          ) : (
+            quizResults.map((r) => {
+              const ok = r.status === "success";
+              return (
+                <li key={r.id}>
+                  <article className="p-3 rounded-xl border border-border bg-background hover:bg-muted/50 transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-semibold text-foreground leading-snug line-clamp-2">{r.subject}</p>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <Clock className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+                          <time className="text-[10px] text-muted-foreground">{r.date}</time>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right flex flex-col items-end gap-1.5">
+                        <div className="flex items-center gap-0.5">
+                          <p className="text-base font-extrabold leading-none" style={{ color: ok ? "#10B981" : "#F59E0B" }}>{r.score}</p>
+                          <p className="text-[9px] text-muted-foreground">/100</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Delete quiz result for "${r.subject}"?`)) onDeleteQuiz(r.id);
+                          }}
+                          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-red-500 transition"
+                          title="Delete Quiz Result"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-base font-extrabold leading-none" style={{ color: ok ? "#10B981" : "#F59E0B" }}>{r.score}</p>
-                      <p className="text-[9px] text-muted-foreground">/100</p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      {ok ? <CheckCircle2 className="w-3 h-3 text-accent shrink-0" /> : <AlertCircle className="w-3 h-3 text-amber-500 shrink-0" />}
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={ok ? { background: "#D1FAE5", color: "#065F46" } : { background: "#FEF3C7", color: "#92400E" }}>{r.badge}</span>
+                      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden ml-1">
+                        <div className="h-full rounded-full" style={{ width: `${r.score}%`, background: ok ? "#10B981" : "#F59E0B" }} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    {ok ? <CheckCircle2 className="w-3 h-3 text-accent shrink-0" /> : <AlertCircle className="w-3 h-3 text-amber-500 shrink-0" />}
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={ok ? { background: "#D1FAE5", color: "#065F46" } : { background: "#FEF3C7", color: "#92400E" }}>{r.badge}</span>
-                    <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden ml-1">
-                      <div className="h-full rounded-full" style={{ width: `${r.score}%`, background: ok ? "#10B981" : "#F59E0B" }} />
-                    </div>
-                  </div>
-                </article>
-              </li>
-            );
-          })}
+                  </article>
+                </li>
+              );
+            })
+          )}
         </ul>
       </section>
-      <aside aria-label="Tip" className="mx-4 mb-4 p-3 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/15">
+
+      <aside aria-label="Tip" className="mx-4 mb-4 p-3 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/15 shrink-0">
         <div className="flex items-center gap-2 mb-1">
           <Award className="w-4 h-4 text-primary shrink-0" />
-          <p className="text-[11px] font-bold text-foreground">Keep it up!</p>
+          <p className="text-[11px] font-bold text-foreground">Goal Focus</p>
         </div>
         <p className="text-[10px] text-muted-foreground leading-relaxed">
-          You&apos;re in the top 15% of students this week. One more quiz to hit your daily goal.
+          Your goals are dynamically synced with your database entries. Keep studying to meet your targets!
         </p>
       </aside>
+
+      {/* Goal Management Modal */}
+      {showGoalModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowGoalModal(false); }}
+        >
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Target className="w-4 h-4 text-primary" /> Manage Weekly Goals
+              </h3>
+              <button onClick={() => setShowGoalModal(false)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* Existing Goals List */}
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Active Goals</p>
+                {calculatedGoals.map((g) => (
+                  <div key={g.id} className="p-3 bg-muted/40 border border-border rounded-xl flex items-center gap-3 justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-foreground truncate">{g.label}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{g.isCustom ? "Manual counter" : "Auto-progress"}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Manual Counter adjusters */}
+                      {g.isCustom && (
+                        <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-0.5">
+                          <button
+                            onClick={() => handleIncrementDone(g, -1)}
+                            className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold hover:bg-muted text-muted-foreground"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold px-1.5">{g.manualDone || 0}</span>
+                          <button
+                            onClick={() => handleIncrementDone(g, 1)}
+                            className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold hover:bg-muted text-muted-foreground"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Target value input */}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground font-semibold">Target:</span>
+                        <input
+                          type="number"
+                          value={g.goal}
+                          min={1}
+                          onChange={(e) => handleUpdateGoalTarget(g, parseInt(e.target.value) || 1)}
+                          className="w-12 px-1.5 py-1 text-center text-xs font-bold border border-border rounded-lg bg-card focus:outline-none focus:ring-1 focus:ring-primary/40"
+                        />
+                      </div>
+
+                      {/* Delete */}
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete goal "${g.label}"?`)) onDeleteGoal(g.id);
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 text-muted-foreground transition ml-1"
+                        title="Delete Goal"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add Goal Form */}
+              <form onSubmit={handleCreateGoal} className="border-t border-border pt-4 space-y-3">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Add New Goal</p>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Goal title (e.g. Code hours)"
+                    value={newGoalForm.label}
+                    onChange={(e) => setNewGoalForm((f) => ({ ...f, label: e.target.value }))}
+                    className="w-full px-3 py-2 text-xs border border-border rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-semibold text-muted-foreground block mb-0.5">Target Value</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={newGoalForm.goal}
+                        onChange={(e) => setNewGoalForm((f) => ({ ...f, goal: parseInt(e.target.value) || 1 }))}
+                        className="w-full px-3 py-2 text-xs border border-border rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-semibold text-muted-foreground block mb-0.5">Progress Type</label>
+                      <select
+                        value={newGoalForm.isCustom ? "custom" : "auto"}
+                        onChange={(e) => setNewGoalForm((f) => ({ ...f, isCustom: e.target.value === "custom" }))}
+                        className="w-full px-3 py-2 text-xs border border-border rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                      >
+                        <option value="custom">Custom (Manual +/-)</option>
+                        <option value="auto">Auto (from Activity)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-semibold text-muted-foreground block mb-0.5">Theme Color</label>
+                      <select
+                        value={newGoalForm.color}
+                        onChange={(e) => setNewGoalForm((f) => ({ ...f, color: e.target.value }))}
+                        className="w-full px-3 py-2 text-xs border border-border rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                      >
+                        <option value="#2563EB">Blue</option>
+                        <option value="#10B981">Green</option>
+                        <option value="#8B5CF6">Purple</option>
+                        <option value="#EF4444">Red</option>
+                        <option value="#F59E0B">Amber</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        type="submit"
+                        className="w-full py-2 bg-primary hover:bg-primary/95 text-white text-xs font-semibold rounded-xl shadow-sm transition"
+                      >
+                        Add Goal
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quiz Log Modal */}
+      {showQuizModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowQuizModal(false); }}
+        >
+          <div className="bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg> Log Quiz Score
+              </h3>
+              <button onClick={() => setShowQuizModal(false)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleLogQuiz} className="p-5 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Subject / Topic</label>
+                <input
+                  type="text"
+                  placeholder="e.g. OOP Polymorphism Quiz"
+                  value={newQuizForm.subject}
+                  onChange={(e) => setNewQuizForm((f) => ({ ...f, subject: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs border border-border rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Score (0-100)</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={newQuizForm.score}
+                  onChange={(e) => setNewQuizForm((f) => ({ ...f, score: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-3 py-2 text-xs border border-border rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-primary hover:bg-primary/95 text-white text-xs font-semibold rounded-xl shadow-sm transition mt-2"
+              >
+                Log Quiz Score
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
@@ -549,14 +879,39 @@ function HomePanel() {
 // My Notebooks Screen
 // ─────────────────────────────────────────────
 
-function NoteCard({ note, onOpen }: { note: typeof NOTEBOOKS[number]; onOpen?: () => void }) {
-  const badge = SUBJECT_BADGE[note.subject];
+function NoteCard({ note, onOpen, onEdit, onDelete, onTogglePin }: { note: any; onOpen?: () => void; onEdit?: () => void; onDelete?: () => void; onTogglePin?: () => void }) {
+  const subject = note.subject || "General";
+  const badge = (SUBJECT_BADGE as any)[subject] || { bg: "#F3F4F6", text: "#111827" };
+  const title = note.title || note.titulo || "Untitled";
+  const preview = note.preview || note.contenido || "";
+
+  const formattedDate = note.createdAt
+    ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    : note.date || "Just now";
+
+  const wordCount = (note.contenido || "").trim().split(/\s+/).filter(Boolean).length;
+  const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
+
   return (
     <article className="group bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 flex flex-col gap-3 cursor-pointer relative">
-      {/* Pinned indicator */}
-      {note.pinned && (
-        <div className="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-primary" title="Pinned" />
-      )}
+      {/* Pin button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onTogglePin?.();
+        }}
+        className={`absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted transition-colors ${
+          note.pinned
+            ? "text-primary opacity-100"
+            : "text-muted-foreground opacity-0 group-hover:opacity-100"
+        }`}
+        title={note.pinned ? "Unpin Note" : "Pin Note"}
+      >
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={note.pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="17" x2="12" y2="22"></line>
+          <path d="M5 17h14v-1.76a2 2 0 0 0-.44-1.24l-2.78-3.5A2 2 0 0 1 15 9.26V5a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4.26a2 2 0 0 1-.78 1.24l-2.78 3.5a2 2 0 0 0-.44 1.24z"></path>
+        </svg>
+      </button>
 
       {/* Subject badge */}
       <div className="flex items-center justify-between">
@@ -565,7 +920,7 @@ function NoteCard({ note, onOpen }: { note: typeof NOTEBOOKS[number]; onOpen?: (
           style={{ background: badge.bg, color: badge.text }}
         >
           <Tag className="w-2.5 h-2.5" />
-          {note.subject}
+          {subject}
         </span>
         <button
           onClick={(e) => { e.stopPropagation(); }}
@@ -578,17 +933,17 @@ function NoteCard({ note, onOpen }: { note: typeof NOTEBOOKS[number]; onOpen?: (
 
       {/* Title */}
       <button
-        onClick={() => { handleOpenNote(note.id); onOpen?.(); }}
-        className="text-left"
+        onClick={() => { onOpen?.(); }}
+        className="text-left font-bold"
       >
         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-          {note.title}
+          {title}
         </h3>
       </button>
 
       {/* Preview */}
       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
-        {note.preview}
+        {preview}
       </p>
 
       {/* Footer */}
@@ -603,14 +958,14 @@ function NoteCard({ note, onOpen }: { note: typeof NOTEBOOKS[number]; onOpen?: (
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
           <button
-            onClick={() => handleEditNote(note.id)}
+            onClick={() => onEdit?.()}
             className="p-1 rounded-lg hover:bg-muted transition"
             aria-label="Edit note"
           >
             <Edit3 className="w-3 h-3 text-muted-foreground" />
           </button>
           <button
-            onClick={() => handleDeleteNote(note.id)}
+            onClick={() => onDelete?.()}
             className="p-1 rounded-lg hover:bg-red-50 transition"
             aria-label="Delete note"
           >
@@ -636,26 +991,26 @@ type UploadedFile = {
 };
 
 const FILE_ICON: Record<UploadedFile["type"], React.ReactNode> = {
-  pdf:   <FileText  className="w-4 h-4 text-red-500"    />,
+  pdf: <FileText className="w-4 h-4 text-red-500" />,
   image: <FileImage className="w-4 h-4 text-purple-500" />,
-  video: <FileVideo className="w-4 h-4 text-blue-500"   />,
-  doc:   <File      className="w-4 h-4 text-primary"    />,
+  video: <FileVideo className="w-4 h-4 text-blue-500" />,
+  doc: <File className="w-4 h-4 text-primary" />,
 };
 
 const MOCK_FILES: UploadedFile[] = [
-  { id: 1, name: "Sistemas_Distribuidos.pdf",      size: "2.4 MB", type: "pdf",   progress: 65, done: false },
-  { id: 2, name: "OOP_Class_Diagram.png",           size: "840 KB", type: "image", progress: 100, done: true  },
-  { id: 3, name: "Lecture_Notes_Databases.docx",   size: "1.1 MB", type: "doc",   progress: 30, done: false },
+  { id: 1, name: "Sistemas_Distribuidos.pdf", size: "2.4 MB", type: "pdf", progress: 65, done: false },
+  { id: 2, name: "OOP_Class_Diagram.png", size: "840 KB", type: "image", progress: 100, done: true },
+  { id: 3, name: "Lecture_Notes_Databases.docx", size: "1.1 MB", type: "doc", progress: 30, done: false },
 ];
 
 function ImportModal({ onClose }: { onClose: () => void }) {
-  const [isDragging, setIsDragging]   = useState(false);
-  const [files, setFiles]             = useState<UploadedFile[]>(MOCK_FILES);
-  const inputRef                      = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [files, setFiles] = useState<UploadedFile[]>(MOCK_FILES);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragOver  = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true);  };
-  const handleDragLeave = ()                    => setIsDragging(false);
-  const handleDrop      = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     // TODO: process e.dataTransfer.files
@@ -704,11 +1059,10 @@ function ImportModal({ onClose }: { onClose: () => void }) {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={handleBrowse}
-            className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all duration-200 ${
-              isDragging
-                ? "border-primary bg-primary/5 scale-[1.01]"
-                : "border-border hover:border-primary/50 hover:bg-muted/50 bg-background"
-            }`}
+            className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all duration-200 ${isDragging
+              ? "border-primary bg-primary/5 scale-[1.01]"
+              : "border-border hover:border-primary/50 hover:bg-muted/50 bg-background"
+              }`}
           >
             <input
               ref={inputRef}
@@ -716,7 +1070,7 @@ function ImportModal({ onClose }: { onClose: () => void }) {
               multiple
               accept=".pdf,.docx,.png,.jpg,.mp4"
               className="sr-only"
-              onChange={() => {/* TODO: handle file input */}}
+              onChange={() => {/* TODO: handle file input */ }}
             />
             {/* Cloud icon */}
             <div className={`p-4 rounded-2xl transition-colors ${isDragging ? "bg-primary/15" : "bg-muted"}`}>
@@ -812,7 +1166,7 @@ function ImportModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function NotebooksMain({ filter, setFilter, viewMode, setViewMode, onImport, onCreateNote, onStudy, onOpenNote }: {
+function NotebooksMain({ filter, setFilter, viewMode, setViewMode, onImport, onCreateNote, onStudy, onOpenNote, notes, loading, onSave, onDelete }: {
   filter: string;
   setFilter: (f: string) => void;
   viewMode: "grid" | "list";
@@ -820,11 +1174,43 @@ function NotebooksMain({ filter, setFilter, viewMode, setViewMode, onImport, onC
   onImport: () => void;
   onCreateNote: () => void;
   onStudy: () => void;
-  onOpenNote?: () => void;
+  onOpenNote?: (id: string) => void;
+  notes: any[];
+  loading: boolean;
+  onSave: (note: any, id?: string) => Promise<boolean>;
+  onDelete: (id?: string) => Promise<boolean>;
 }) {
+  type NotaType = { id?: string; titulo?: string; contenido?: string; title?: string; preview?: string; subject?: string; pinned?: boolean; date?: string; readTime?: string };
+
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState<NotaType>({ titulo: "", contenido: "", subject: "OOP", pinned: false });
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const filtered = filter === "All Subjects"
-    ? NOTEBOOKS
-    : NOTEBOOKS.filter((n) => n.subject === filter);
+    ? notes
+    : notes.filter(n => n.subject === filter || (filter === "OOP" && n.subject === "Object-Oriented\nProgramming"));
+
+  async function handleSave() {
+    try {
+      const success = await onSave(form, editingId || undefined);
+      if (success) {
+        setForm({ titulo: '', contenido: '', subject: 'OOP', pinned: false });
+        setEditingId(null);
+        setShowForm(false);
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  async function handleDelete(id?: string) {
+    if (!id) return;
+    await onDelete(id);
+  }
+
+  function startEdit(n: NotaType) {
+    setEditingId(n.id || null);
+    setForm({ titulo: n.titulo, contenido: n.contenido, subject: n.subject || "OOP", pinned: n.pinned || false });
+    setShowForm(true);
+  }
 
   return (
     <main className="flex-1 min-w-0 overflow-y-auto px-8 py-7 space-y-6">
@@ -834,7 +1220,7 @@ function NotebooksMain({ filter, setFilter, viewMode, setViewMode, onImport, onC
           <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">My Notebooks</p>
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Study Notes</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {NOTEBOOKS.length} notes across {SUBJECTS.length} subjects
+            {notes.length} notes across {SUBJECTS.length} subjects
           </p>
         </div>
         <button
@@ -892,7 +1278,7 @@ function NotebooksMain({ filter, setFilter, viewMode, setViewMode, onImport, onC
       {/* Action bar */}
       <div className="flex items-center gap-3">
         <button
-          onClick={onCreateNote}
+          onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
         >
           <Plus className="w-4 h-4" />
@@ -910,39 +1296,108 @@ function NotebooksMain({ filter, setFilter, viewMode, setViewMode, onImport, onC
         </span>
       </div>
 
+      {showForm && (
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+          <input
+            type="text"
+            placeholder="Título"
+            value={form.titulo}
+            onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+          />
+          <select
+            value={form.subject || "OOP"}
+            onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
+          >
+            {SUBJECT_FILTERS.filter(f => f !== "All Subjects").map((f) => (
+              <option key={f} value={f}>{f}</option>
+            ))}
+          </select>
+          <textarea
+            placeholder="Contenido"
+            value={form.contenido}
+            onChange={(e) => setForm((f) => ({ ...f, contenido: e.target.value }))}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground h-28"
+          />
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer py-1">
+              <input
+                type="checkbox"
+                checked={form.pinned || false}
+                onChange={(e) => setForm((f) => ({ ...f, pinned: e.target.checked }))}
+                className="w-4 h-4 text-primary rounded border-border focus:ring-primary/30 cursor-pointer"
+              />
+              <span className="text-xs font-semibold text-foreground">Pin Note to Top</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <button onClick={() => handleSave()} className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold">Save</button>
+              <button onClick={() => { setShowForm(false); setForm({ titulo: '', contenido: '', subject: 'OOP', pinned: false }); setEditingId(null); }} className="px-4 py-2 rounded-xl bg-card border text-xs font-semibold">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Note cards grid */}
       {viewMode === "grid" ? (
         <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((note) => (
-            <NoteCard key={note.id} note={note} onOpen={onOpenNote} />
+            <NoteCard
+              key={note.id}
+              note={note}
+              onOpen={() => onOpenNote?.(note.id || "")}
+              onEdit={() => startEdit(note)}
+              onDelete={() => handleDelete(note.id)}
+              onTogglePin={() => onSave({ ...note, pinned: !note.pinned }, note.id)}
+            />
           ))}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((note) => {
-            const badge = SUBJECT_BADGE[note.subject];
+            const title = note.title || note.titulo || 'Untitled';
+            const preview = note.preview || note.contenido || '';
+            const subject = note.subject || "General";
+            const badge = (SUBJECT_BADGE as any)[subject] || { bg: "#F3F4F6", text: "#111827" };
+            const formattedDate = note.createdAt
+              ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+              : note.date || "Just now";
+            const wordCount = (note.contenido || "").trim().split(/\s+/).filter(Boolean).length;
+            const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
             return (
               <article
                 key={note.id}
                 className="group bg-card border border-border rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-all flex items-center gap-5 cursor-pointer"
-                onClick={() => handleOpenNote(note.id)}
+                onClick={() => onOpenNote?.(note.id || "")}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.text }}>
-                      {note.subject}
+                      {subject}
                     </span>
-                    {note.pinned && <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />}
                   </div>
-                  <h3 className="text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors">{note.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{note.preview}</p>
+                  <h3 className="text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors">{title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{preview}</p>
                 </div>
                 <div className="shrink-0 flex items-center gap-4 text-[10px] text-muted-foreground">
-                  <div className="flex items-center gap-1"><Calendar className="w-3 h-3" />{note.date}</div>
-                  <div className="flex items-center gap-1"><Clock className="w-3 h-3" />{note.readTime}</div>
+                  <div className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formattedDate}</div>
+                  <div className="flex items-center gap-1"><Clock className="w-3 h-3" />{calculatedReadTime}</div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button onClick={(e) => { e.stopPropagation(); handleEditNote(note.id); }} className="p-1.5 rounded-lg hover:bg-muted transition"><Edit3 className="w-3.5 h-3.5 text-muted-foreground" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteNote(note.id); }} className="p-1.5 rounded-lg hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSave({ ...note, pinned: !note.pinned }, note.id);
+                      }}
+                      className={`p-1.5 rounded-lg hover:bg-muted transition ${note.pinned ? "text-primary animate-pulse" : "text-muted-foreground"}`}
+                      title={note.pinned ? "Unpin Note" : "Pin Note"}
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={note.pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="17" x2="12" y2="22"></line>
+                        <path d="M5 17h14v-1.76a2 2 0 0 0-.44-1.24l-2.78-3.5A2 2 0 0 1 15 9.26V5a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4.26a2 2 0 0 1-.78 1.24l-2.78 3.5a2 2 0 0 0-.44 1.24z"></path>
+                      </svg>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); startEdit(note); }} className="p-1.5 rounded-lg hover:bg-muted transition"><Edit3 className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }} className="p-1.5 rounded-lg hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
                   </div>
                 </div>
               </article>
@@ -954,18 +1409,31 @@ function NotebooksMain({ filter, setFilter, viewMode, setViewMode, onImport, onC
   );
 }
 
-function NotebooksPanel() {
-  const bySubject = SUBJECTS.map((s) => ({
-    ...s,
-    count: NOTEBOOKS.filter((n) => n.subject === s.name.replace("\n", " ") || n.subject === s.name.split("\n")[0]).length,
-  }));
+function NotebooksPanel({ notes = [], onOpenNote }: { notes?: any[]; onOpenNote?: (id: string) => void }) {
+  const displayNotes = notes;
+
+  const totalNotes = displayNotes.length;
+  const thisWeekNotes = displayNotes.filter((n) => {
+    if (n.createdAt) {
+      const diffTime = Math.abs(new Date().getTime() - new Date(n.createdAt).getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7;
+    }
+    return false;
+  }).length;
+
+  const pinnedNotes = displayNotes.filter((n) => n.pinned || n.destacado);
 
   return (
     <aside aria-label="Notebooks panel" className="w-72 shrink-0 border-l border-border bg-card flex flex-col h-full overflow-y-auto">
       {/* Quick stats */}
       <section aria-label="Note stats" className="px-5 py-5 border-b border-border space-y-3">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Overview</h3>
-        {NOTEBOOKS_STATS.map((s) => (
+        {[
+          { label: "Total Notes", value: totalNotes, color: "#2563EB", bg: "#EFF6FF" },
+          { label: "This Week", value: thisWeekNotes, color: "#10B981", bg: "#ECFDF5" },
+          { label: "Pinned", value: pinnedNotes.length, color: "#8B5CF6", bg: "#F5F3FF" },
+        ].map((s) => (
           <div key={s.label} className="flex items-center justify-between p-3 rounded-xl" style={{ background: s.bg }}>
             <span className="text-xs font-semibold" style={{ color: s.color }}>{s.label}</span>
             <span className="text-xl font-extrabold" style={{ color: s.color }}>{s.value}</span>
@@ -978,7 +1446,10 @@ function NotebooksPanel() {
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">By Subject</h3>
         <ul className="space-y-2">
           {SUBJECTS.map((s) => {
-            const count = NOTEBOOKS.filter((n) => n.subject === s.name.replace("\n", " ").split(" ")[0] || s.name.includes(n.subject) || n.subject === s.name.replace("\n"," ")).length;
+            const count = displayNotes.filter((n) => {
+              const sub = n.subject || "General";
+              return sub === s.name.replace("\n", " ").split(" ")[0] || s.name.includes(sub) || sub === s.name.replace("\n", " ");
+            }).length;
             return (
               <li key={s.id}>
                 <button className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition group">
@@ -1002,21 +1473,24 @@ function NotebooksPanel() {
       <section aria-label="Pinned notes" className="px-5 py-5">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Pinned</h3>
         <ul className="space-y-2">
-          {NOTEBOOKS.filter((n) => n.pinned).map((n) => {
-            const badge = SUBJECT_BADGE[n.subject];
+          {pinnedNotes.map((n) => {
+            const subject = n.subject || "OOP";
+            const badge = (SUBJECT_BADGE as any)[subject] || { bg: "#F3F4F6", text: "#111827" };
             return (
               <li key={n.id}>
                 <button
-                  onClick={() => handleOpenNote(n.id)}
+                  onClick={() => onOpenNote?.(n.id)}
                   className="w-full text-left p-3 rounded-xl border border-border hover:bg-muted/50 transition group"
                 >
                   <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.text }}>
-                    {n.subject}
+                    {subject}
                   </span>
                   <p className="text-xs font-semibold text-foreground mt-1.5 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                    {n.title}
+                    {n.title || n.titulo || "Untitled"}
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{n.date}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : n.date || "Just now"}
+                  </p>
                 </button>
               </li>
             );
@@ -1124,9 +1598,9 @@ const QUIZ_QUESTIONS = [
   },
 ];
 
-const handleStudyMode   = () => { /* wired via prop in App */ };
-const handleSendMessage = (_msg: string) => {};
-const handleConfirmLink = (_ids: number[]) => {};
+const handleStudyMode = () => { /* wired via prop in App */ };
+const handleSendMessage = (_msg: string) => { };
+const handleConfirmLink = (_ids: number[]) => { };
 
 // ─────────────────────────────────────────────
 // Link Notes Modal Data
@@ -1181,27 +1655,44 @@ const LINKABLE_NOTES = [
 // Link Notes Modal
 // ─────────────────────────────────────────────
 
-function LinkNotesModal({ onClose }: { onClose: () => void }) {
-  const [search, setSearch]       = useState("");
-  const [selected, setSelected]   = useState<Set<number>>(new Set([10]));
+function LinkNotesModal({
+  activeCuaderno,
+  notes = [],
+  onSaveCuaderno,
+  onClose,
+}: {
+  activeCuaderno: any;
+  notes: any[];
+  onSaveCuaderno: (cuaderno: any, id?: string) => Promise<boolean>;
+  onClose: () => void;
+}) {
+  const [search, setSearch] = useState("");
+  // Start with a set of currently linked notes
+  const [selected, setSelected] = useState<Set<string>>(new Set(activeCuaderno.noteIds || []));
 
+  // Filter notes that are available to be linked
+  // E.g., we show all notes in the database (or optionally we can filter by the notebook's subject, but let's show all notes in the database so they can link whatever notes they want! It's much more flexible. But let's highlight or sort by subject matching to make it look premium).
   const filtered = search
-    ? LINKABLE_NOTES.filter(
+    ? notes.filter(
         (n) =>
-          n.title.toLowerCase().includes(search.toLowerCase()) ||
-          n.tag.toLowerCase().includes(search.toLowerCase())
+          (n.title || n.titulo || "").toLowerCase().includes(search.toLowerCase()) ||
+          (n.subject || "").toLowerCase().includes(search.toLowerCase())
       )
-    : LINKABLE_NOTES;
+    : notes;
 
-  const toggle = (id: number) =>
+  const toggle = (id: string) =>
     setSelected((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
 
-  const handleLink = () => {
-    handleConfirmLink(Array.from(selected));
+  const handleLink = async () => {
+    const updatedNoteIds = Array.from(selected);
+    const success = await onSaveCuaderno({ ...activeCuaderno, noteIds: updatedNoteIds }, activeCuaderno.id);
+    if (success) {
+      toast.success("Notes linked successfully!");
+    }
     onClose();
   };
 
@@ -1262,20 +1753,19 @@ function LinkNotesModal({ onClose }: { onClose: () => void }) {
           )}
           {filtered.map((note) => {
             const isSelected = selected.has(note.id);
+            const badge = SUBJECT_BADGE[note.subject as SubjectKey] || { bg: "#F3F4F6", text: "#111827" };
             return (
               <li key={note.id}>
                 <button
                   onClick={() => toggle(note.id)}
-                  className={`w-full flex items-start gap-3.5 p-3.5 rounded-xl border text-left transition-all duration-150 ${
-                    isSelected
-                      ? "bg-primary/5 border-primary/30 shadow-sm"
-                      : "bg-background border-border hover:bg-muted/60 hover:border-border"
-                  }`}
+                  className={`w-full flex items-start gap-3.5 p-3.5 rounded-xl border text-left transition-all duration-150 ${isSelected
+                    ? "bg-primary/5 border-primary/30 shadow-sm"
+                    : "bg-background border-border hover:bg-muted/60 hover:border-border"
+                    }`}
                 >
                   {/* Checkbox */}
-                  <div className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                    isSelected ? "bg-primary border-primary" : "border-border bg-card"
-                  }`}>
+                  <div className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "bg-primary border-primary" : "border-border bg-card"
+                    }`}>
                     {isSelected && (
                       <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
                         <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -1287,18 +1777,18 @@ function LinkNotesModal({ onClose }: { onClose: () => void }) {
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className={`text-xs font-bold leading-snug transition-colors ${isSelected ? "text-primary" : "text-foreground"}`}>
-                        {note.title}
+                        {note.title || note.titulo || "Untitled"}
                       </p>
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
-                      {note.preview}
+                      {note.preview || note.contenido || ""}
                     </p>
                     <span
                       className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                      style={{ background: note.tagStyle.bg, color: note.tagStyle.text }}
+                      style={{ background: badge.bg, color: badge.text }}
                     >
                       <Tag className="w-2.5 h-2.5" />
-                      {note.tag}
+                      {note.subject || "General"}
                     </span>
                   </div>
                 </button>
@@ -1321,11 +1811,10 @@ function LinkNotesModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               onClick={handleLink}
-              disabled={selected.size === 0}
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <Link2 className="w-4 h-4" />
-              Link Selected Notes
+              Save Link Selection
             </button>
           </div>
         </div>
@@ -1338,23 +1827,48 @@ function LinkNotesModal({ onClose }: { onClose: () => void }) {
 // Study Notebooks — Middle Column
 // ─────────────────────────────────────────────
 
-function LinkedNoteCard({ note, onOpen }: { note: typeof LINKED_NOTES[number]; onOpen?: () => void }) {
+function LinkedNoteCard({ note, onOpen, onUnlink }: { note: any; onOpen?: () => void; onUnlink?: () => void }) {
+  const title = note.title || note.titulo || "Untitled";
+  const preview = note.preview || note.contenido || "";
+  const tags = note.tags || (note.subject ? [note.subject] : ["OOP"]);
+
+  const formattedDate = note.createdAt
+    ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    : note.date || "Just now";
+
+  const wordCount = (note.contenido || "").trim().split(/\s+/).filter(Boolean).length;
+  const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
+
   return (
     <article
-      className="group bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 flex flex-col gap-3 cursor-pointer"
+      className="group bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 flex flex-col gap-3 cursor-pointer relative"
       onClick={onOpen}
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors flex-1">
-          {note.title}
+          {title}
         </h3>
-        <BookMarked className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+        <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+          {onUnlink && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onUnlink();
+              }}
+              className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+              title="Unlink note"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <BookMarked className="w-4 h-4 text-muted-foreground" />
+        </div>
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
-        {note.preview}
+        {preview}
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
-        {note.tags.map((tag) => (
+        {tags.map((tag: string) => (
           <span key={tag} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
             {tag}
           </span>
@@ -1363,52 +1877,247 @@ function LinkedNoteCard({ note, onOpen }: { note: typeof LINKED_NOTES[number]; o
       <div className="flex items-center justify-between pt-2 border-t border-border">
         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
           <Calendar className="w-3 h-3 shrink-0" />
-          <time>{note.date}</time>
+          <time>{formattedDate}</time>
         </div>
         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
           <Clock className="w-3 h-3 shrink-0" />
-          {note.readTime}
+          {calculatedReadTime}
         </div>
       </div>
     </article>
   );
 }
 
-function StudyNotebooksMain({ onStudy = () => {}, onOpenNote }: { onStudy?: () => void; onOpenNote?: () => void }) {
-  const [noteSearch, setNoteSearch]   = useState("");
+function StudyNotebooksMain({
+  notes = [],
+  cuadernos = [],
+  selectedCuadernoId,
+  setSelectedCuadernoId,
+  onSaveCuaderno,
+  onDeleteCuaderno,
+  onStudy,
+  onOpenNote,
+}: {
+  notes?: any[];
+  cuadernos?: any[];
+  selectedCuadernoId: string | null;
+  setSelectedCuadernoId: (id: string | null) => void;
+  onSaveCuaderno: (cuaderno: any, id?: string) => Promise<boolean>;
+  onDeleteCuaderno: (id: string) => Promise<boolean>;
+  onStudy?: () => void;
+  onOpenNote?: (id: string) => void;
+}) {
+  const [noteSearch, setNoteSearch] = useState("");
   const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [cuadernoForm, setCuadernoForm] = useState({ titulo: "", descripcion: "", materia: "OOP" });
 
+  const activeCuaderno = cuadernos.find((c) => c.id === selectedCuadernoId);
+
+  // If no notebook is active, display the list/grid of all notebooks
+  if (!activeCuaderno) {
+    const handleCreateSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!cuadernoForm.titulo.trim()) {
+        toast.error("Please enter a title");
+        return;
+      }
+      const success = await onSaveCuaderno(cuadernoForm);
+      if (success) {
+        toast.success("Study Notebook created successfully!");
+        setCuadernoForm({ titulo: "", descripcion: "", materia: "OOP" });
+        setShowCreateForm(false);
+      }
+    };
+
+    return (
+      <main className="flex-1 min-w-0 overflow-y-auto px-8 py-7 space-y-6">
+        <section aria-label="Notebooks header" className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Study Notebooks</p>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">My Study Notebooks</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {cuadernos.length} notebooks registered in database
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-150 shrink-0"
+            style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)", color: "#fff" }}
+          >
+            <Plus className="w-4 h-4" />
+            Create Notebook
+          </button>
+        </section>
+
+        {showCreateForm && (
+          <form onSubmit={handleCreateSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-sm max-w-xl transition-all duration-150 animate-in fade-in slide-in-from-top-4">
+            <h3 className="text-sm font-bold text-foreground">New Study Notebook</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Programación Orientada a Objetos"
+                  value={cuadernoForm.titulo}
+                  onChange={(e) => setCuadernoForm((f) => ({ ...f, titulo: e.target.value }))}
+                  className="w-full px-3.5 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Subject / Materia</label>
+                  <select
+                    value={cuadernoForm.materia}
+                    onChange={(e) => setCuadernoForm((f) => ({ ...f, materia: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                  >
+                    {SUBJECT_FILTERS.filter((f) => f !== "All Subjects").map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Description</label>
+                <textarea
+                  placeholder="What is this study notebook about?"
+                  value={cuadernoForm.descripcion}
+                  onChange={(e) => setCuadernoForm((f) => ({ ...f, descripcion: e.target.value }))}
+                  className="w-full px-3.5 py-2 rounded-xl border border-border bg-background text-foreground text-sm h-20 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <button type="submit" className="px-5 py-2 rounded-xl bg-primary text-white text-xs font-semibold shadow hover:bg-primary/95 transition">Create</button>
+              <button type="button" onClick={() => { setShowCreateForm(false); setCuadernoForm({ titulo: "", descripcion: "", materia: "OOP" }); }} className="px-5 py-2 rounded-xl bg-card border text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition">Cancel</button>
+            </div>
+          </form>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {cuadernos.length === 0 ? (
+            <div className="col-span-full py-16 text-center bg-card border border-dashed border-border rounded-2xl space-y-3">
+              <BookOpen className="w-10 h-10 text-muted-foreground/60 mx-auto" />
+              <p className="text-sm font-semibold text-muted-foreground">No study notebooks registered in database</p>
+              <p className="text-xs text-muted-foreground/80">Create your first study notebook to get started!</p>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition shadow-sm"
+              >
+                Create First Notebook
+              </button>
+            </div>
+          ) : (
+            cuadernos.map((c) => {
+              const badge = SUBJECT_BADGE[c.materia as SubjectKey] || { bg: "#F3F4F6", text: "#111827" };
+              const noteCount = c.noteIds?.length || 0;
+              return (
+                <div
+                  key={c.id}
+                  onClick={() => setSelectedCuadernoId(c.id)}
+                  className="group bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer flex flex-col justify-between min-h-[160px] relative"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.text }}>
+                        {c.materia}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Are you sure you want to delete this study notebook?")) {
+                            onDeleteCuaderno(c.id);
+                          }
+                        }}
+                        className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                        title="Delete Notebook"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <h3 className="text-base font-extrabold text-foreground leading-snug group-hover:text-primary transition-colors">{c.titulo}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{c.descripcion || "No description provided."}</p>
+                  </div>
+                  <div className="flex items-center justify-between pt-4 border-t border-border mt-3 text-[10px] text-muted-foreground font-semibold">
+                    <div className="flex items-center gap-1">
+                      <BookOpen className="w-3 h-3 text-primary" />
+                      {noteCount} note{noteCount !== 1 ? "s" : ""} linked
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/75 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  // Active notebook details view
+  const linkedNotes = notes.filter((n) => activeCuaderno.noteIds?.includes(n.id));
   const filtered = noteSearch
-    ? LINKED_NOTES.filter((n) =>
-        n.title.toLowerCase().includes(noteSearch.toLowerCase()) ||
-        n.tags.some((t) => t.toLowerCase().includes(noteSearch.toLowerCase()))
+    ? linkedNotes.filter(
+        (n) =>
+          (n.title || n.titulo || "").toLowerCase().includes(noteSearch.toLowerCase()) ||
+          (n.contenido || n.preview || "").toLowerCase().includes(noteSearch.toLowerCase())
       )
-    : LINKED_NOTES;
+    : linkedNotes;
+
+  const handleUnlink = async (noteId: string) => {
+    const updatedNoteIds = activeCuaderno.noteIds.filter((id: string) => id !== noteId);
+    await onSaveCuaderno({ ...activeCuaderno, noteIds: updatedNoteIds }, activeCuaderno.id);
+    toast.info("Note unlinked from study notebook.");
+  };
 
   return (
     <main className="flex-1 min-w-0 overflow-y-auto px-8 py-7 space-y-6">
       {/* Header */}
-      <section aria-label="Notebook header" className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">
-            Study Notebooks
-          </p>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
-            Programación Orientada a Objetos
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {LINKED_NOTES.length} linked notes · Last updated Jun 20, 2026
-          </p>
-        </div>
-        {/* Study CTA */}
+      <section aria-label="Notebook header" className="space-y-2">
         <button
-          onClick={onStudy}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-150 shrink-0"
-          style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)", color: "#fff" }}
+          onClick={() => setSelectedCuadernoId(null)}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition font-medium"
         >
-          <Sparkles className="w-4 h-4" />
-          Study Now
+          <ChevronLeft className="w-4 h-4" />
+          Back to all notebooks
         </button>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-semibold text-primary uppercase tracking-widest">
+                Study Notebook
+              </span>
+              <span
+                className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                style={{
+                  background: (SUBJECT_BADGE[activeCuaderno.materia as SubjectKey] || { bg: "#F3F4F6", text: "#111827" }).bg,
+                  color: (SUBJECT_BADGE[activeCuaderno.materia as SubjectKey] || { bg: "#F3F4F6", text: "#111827" }).text,
+                }}
+              >
+                {activeCuaderno.materia}
+              </span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
+              {activeCuaderno.titulo}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+              {activeCuaderno.descripcion || "No description provided."}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2 font-medium">
+              {linkedNotes.length} linked notes · Created on {new Date(activeCuaderno.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          {/* Study CTA */}
+          <button
+            onClick={onStudy}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-150 shrink-0"
+            style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)", color: "#fff" }}
+          >
+            <Sparkles className="w-4 h-4" />
+            Study Now
+          </button>
+        </div>
       </section>
 
       {/* Toolbar */}
@@ -1430,22 +2139,48 @@ function StudyNotebooksMain({ onStudy = () => {}, onOpenNote }: { onStudy?: () =
             className="w-full pl-9 pr-4 py-2 text-sm bg-card rounded-xl border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition shadow-sm"
           />
         </div>
-        <span className="ml-auto text-xs text-muted-foreground shrink-0">
-          {filtered.length} of {LINKED_NOTES.length} notes
+        <span className="ml-auto text-xs text-muted-foreground shrink-0 font-medium">
+          {filtered.length} of {linkedNotes.length} notes
         </span>
       </section>
 
       {/* Linked note cards grid */}
       <section aria-label="Linked notes">
-        <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((note) => (
-            <LinkedNoteCard key={note.id} note={note} onOpen={onOpenNote} />
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="py-16 text-center bg-card border border-dashed border-border rounded-2xl space-y-3">
+            <BookMarked className="w-10 h-10 text-muted-foreground/60 mx-auto" />
+            <p className="text-sm font-semibold text-muted-foreground">No notes linked to this study notebook yet</p>
+            <p className="text-xs text-muted-foreground/80">Link existing notes to start summarizing and generating smart quizzes!</p>
+            <button
+              onClick={() => setShowLinkModal(true)}
+              className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition shadow-sm"
+            >
+              Link Notes Now
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+            {filtered.map((note) => (
+              <LinkedNoteCard
+                key={note.id}
+                note={note}
+                onOpen={() => onOpenNote?.(note.id)}
+                onUnlink={() => handleUnlink(note.id)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Link Notes Modal */}
-      {showLinkModal && <LinkNotesModal onClose={() => setShowLinkModal(false)} />}
+      {showLinkModal && (
+        <LinkNotesModal
+          activeCuaderno={activeCuaderno}
+          notes={notes}
+          onSaveCuaderno={onSaveCuaderno}
+          onClose={() => setShowLinkModal(false)}
+        />
+      )}
     </main>
   );
 }
@@ -1454,13 +2189,83 @@ function StudyNotebooksMain({ onStudy = () => {}, onOpenNote }: { onStudy?: () =
 // Study Notebooks — Right AI Panel
 // ─────────────────────────────────────────────
 
-function StudyNotebooksPanel() {
-  const [activeTab, setActiveTab]   = useState<"summary" | "quiz">("summary");
-  const [selected, setSelected]     = useState<Record<number, string>>({});
-  const [chatMsg, setChatMsg]       = useState("");
-  const [quizIdx, setQuizIdx]       = useState(0);
+function StudyNotebooksPanel({
+  onQuizSubmit,
+  selectedCuaderno,
+  notes = [],
+}: {
+  onQuizSubmit?: () => void;
+  selectedCuaderno?: any;
+  notes?: any[];
+}) {
+  const [activeTab, setActiveTab] = useState<"summary" | "quiz">("summary");
+  const [selected, setSelected] = useState<Record<string, string>>({});
+  const [chatMsg, setChatMsg] = useState("");
+  const [quizIdx, setQuizIdx] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
-  const currentQ = QUIZ_QUESTIONS[quizIdx];
+  // If no notebook is active
+  if (!selectedCuaderno) {
+    return (
+      <aside aria-label="AI Study Panel" className="w-80 shrink-0 border-l border-border bg-card flex flex-col h-full items-center justify-center p-6 text-center space-y-3">
+        <Brain className="w-12 h-12 text-primary/40 animate-pulse" />
+        <h3 className="text-sm font-bold text-foreground">AI Study Assistant</h3>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Select a study notebook from the dashboard to start summarizing and generating smart quizzes.
+        </p>
+      </aside>
+    );
+  }
+
+  const linkedNotes = notes.filter((n) => selectedCuaderno.noteIds?.includes(n.id));
+
+  // Generate dynamic summary points from linked notes
+  const dynamicSummaryPoints = linkedNotes.map((note, index) => {
+    const title = note.title || note.titulo || "Untitled Note";
+    const content = note.contenido || note.preview || "";
+    const shortDesc = content.length > 90 ? content.substring(0, 90) + "..." : content;
+    return {
+      id: note.id || index,
+      text: `${title}: ${shortDesc || "No content provided yet."}`
+    };
+  });
+
+  // Collect key concepts from notes
+  const keyConcepts = Array.from(new Set(
+    linkedNotes.map(n => n.subject || "General")
+  )).filter(Boolean);
+  const displayConcepts = keyConcepts.length > 0 ? keyConcepts : [selectedCuaderno.materia || "Study Guide"];
+
+  // Generate dynamic quiz questions based on the linked notes
+  const dynamicQuizQuestions = linkedNotes.map((note, i) => {
+    const title = note.title || note.titulo || "Untitled Note";
+    const content = note.contenido || note.preview || "";
+    return {
+      id: `q-${note.id || i}`,
+      question: `What is the core focus of the linked note "${title}"?`,
+      options: [
+        { label: "A", text: content.length > 70 ? content.substring(0, 70) + "..." : content || "The main content of the note" },
+        { label: "B", text: "An alternative concept with different parameters." },
+        { label: "C", text: "A general miscellaneous programming theory." },
+        { label: "D", text: "None of the above options." }
+      ],
+      correct: "A"
+    };
+  });
+
+  const finalQuizQuestions = dynamicQuizQuestions.length > 0 ? dynamicQuizQuestions : [
+    {
+      id: "q-default",
+      question: "No notes linked yet. Please link some notes to generate custom quiz questions.",
+      options: [
+        { label: "A", text: "Link notes now to get started." },
+        { label: "B", text: "Study with mock data instead." },
+      ],
+      correct: "A"
+    }
+  ];
+
+  const currentQ = finalQuizQuestions[quizIdx] || finalQuizQuestions[0];
   const answered = selected[currentQ.id];
   const isCorrect = answered === currentQ.correct;
 
@@ -1468,8 +2273,59 @@ function StudyNotebooksPanel() {
     if (!answered) setSelected((prev) => ({ ...prev, [currentQ.id]: label }));
   };
 
-  const handleNext = () => setQuizIdx((i) => Math.min(i + 1, QUIZ_QUESTIONS.length - 1));
-  const handlePrev = () => setQuizIdx((i) => Math.max(i - 1, 0));
+  const handleNext = () => setQuizIdx((i) => Math.min(i + 1, finalQuizQuestions.length - 1));
+  const handlePrev = () => setQuizIdx((i) => Math.max(i - 0, 0));
+
+  const allAnswered = finalQuizQuestions.every(q => selected[q.id]);
+
+  const handleSubmitQuiz = async () => {
+    let correctCount = 0;
+    finalQuizQuestions.forEach(q => {
+      if (selected[q.id] === q.correct) {
+        correctCount++;
+      }
+    });
+    const finalScore = Math.round((correctCount / finalQuizQuestions.length) * 100);
+
+    setSubmitting(true);
+    try {
+      const quizResult = {
+        subject: `${selectedCuaderno.titulo} — Quiz`,
+        score: finalScore,
+        date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        status: finalScore >= 70 ? "success" : "warning",
+        badge: finalScore >= 90 ? "Excellent" : finalScore >= 80 ? "Great" : finalScore >= 70 ? "Good" : "Needs Work",
+        goalMet: finalScore >= 70
+      };
+
+      const res = await fetch('/api/dashboard/quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quizResult),
+      });
+
+      if (!res.ok) throw new Error('Quiz submit failed');
+
+      toast.success(`Quiz submitted! Score: ${finalScore}%`);
+
+      // Reset quiz local state
+      setSelected({});
+      setQuizIdx(0);
+
+      if (onQuizSubmit) {
+        onQuizSubmit();
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to submit quiz results.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSendMessage = (msg: string) => {
+    toast.info(`Ask AI helper: "${msg}" (Feature coming soon!)`);
+  };
 
   return (
     <aside
@@ -1482,11 +2338,10 @@ function StudyNotebooksPanel() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-semibold transition-all ${
-              activeTab === tab
-                ? "text-primary border-b-2 border-primary bg-primary/5"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-semibold transition-all ${activeTab === tab
+              ? "text-primary border-b-2 border-primary bg-primary/5"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
           >
             {tab === "summary"
               ? <><Brain className="w-3.5 h-3.5" /> AI Summary</>
@@ -1499,23 +2354,30 @@ function StudyNotebooksPanel() {
       {/* Tab content */}
       <div className="flex-1 overflow-y-auto">
         {activeTab === "summary" ? (
-          <section aria-label="AI Summary" className="px-5 py-5 space-y-4">
+          <section aria-label="AI Summary" className="px-5 py-5 space-y-4 animate-in fade-in">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-gradient-to-br from-primary/10 to-violet-500/10 border border-primary/15">
               <Sparkles className="w-4 h-4 text-primary shrink-0" />
               <p className="text-[11px] font-semibold text-foreground">
-                AI-generated summary of your 6 linked notes
+                AI summary of your {linkedNotes.length} linked notes
               </p>
             </div>
-            <ul className="space-y-3">
-              {AI_SUMMARY_POINTS.map((point) => (
-                <li key={point.id} className="flex gap-3 group">
-                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                  <p className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
-                    {point.text}
-                  </p>
-                </li>
-              ))}
-            </ul>
+
+            {linkedNotes.length === 0 ? (
+              <p className="text-xs text-muted-foreground leading-relaxed italic text-center py-6">
+                No notes linked to this study notebook. Link notes to see an automated summary of key topics.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {dynamicSummaryPoints.map((point) => (
+                  <li key={point.id} className="flex gap-3 group">
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                    <p className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
+                      {point.text}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {/* Key concepts chips */}
             <div className="pt-2 border-t border-border">
@@ -1523,7 +2385,7 @@ function StudyNotebooksPanel() {
                 Key Concepts
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {["Inheritance", "Polymorphism", "SOLID", "Encapsulation", "UML", "Factory Pattern", "Singleton", "Abstraction"].map((kw) => (
+                {displayConcepts.map((kw) => (
                   <span key={kw} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted border border-border text-foreground hover:bg-primary hover:text-white hover:border-primary transition cursor-pointer">
                     {kw}
                   </span>
@@ -1538,24 +2400,23 @@ function StudyNotebooksPanel() {
                 <p className="text-[10px] font-bold text-amber-800">Study Tip</p>
               </div>
               <p className="text-[10px] text-amber-700 leading-relaxed">
-                Focus on the difference between compile-time and runtime polymorphism — it appears frequently in exams.
+                Connect the dots between the concepts mentioned in these notes. Active recall through the Smart Quiz tab will help solidify your understanding.
               </p>
             </div>
           </section>
         ) : (
-          <section aria-label="Smart Quiz" className="px-5 py-5 space-y-4">
+          <section aria-label="Smart Quiz" className="px-5 py-5 space-y-4 animate-in fade-in">
             {/* Progress */}
             <div className="flex items-center justify-between mb-1">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                Question {quizIdx + 1} of {QUIZ_QUESTIONS.length}
+                Question {quizIdx + 1} of {finalQuizQuestions.length}
               </p>
               <div className="flex gap-1">
-                {QUIZ_QUESTIONS.map((_, i) => (
+                {finalQuizQuestions.map((_, i) => (
                   <div
                     key={i}
-                    className={`w-5 h-1.5 rounded-full transition-colors ${
-                      i === quizIdx ? "bg-primary" : selected[QUIZ_QUESTIONS[i].id] ? "bg-accent" : "bg-muted"
-                    }`}
+                    className={`w-5 h-1.5 rounded-full transition-colors ${i === quizIdx ? "bg-primary" : selected[finalQuizQuestions[i].id] ? "bg-accent" : "bg-muted"
+                      }`}
                   />
                 ))}
               </div>
@@ -1572,12 +2433,12 @@ function StudyNotebooksPanel() {
             <div className="space-y-2">
               {currentQ.options.map((opt) => {
                 const isSelected = answered === opt.label;
-                const isRight    = opt.label === currentQ.correct;
+                const isRight = opt.label === currentQ.correct;
                 let style = "bg-card border-border text-foreground hover:bg-muted hover:border-primary/40";
                 if (answered) {
-                  if (isRight)     style = "bg-emerald-50 border-emerald-300 text-emerald-800";
+                  if (isRight) style = "bg-emerald-50 border-emerald-300 text-emerald-800";
                   else if (isSelected) style = "bg-red-50 border-red-300 text-red-700";
-                  else             style = "bg-card border-border text-muted-foreground opacity-60";
+                  else style = "bg-card border-border text-muted-foreground opacity-60";
                 }
                 return (
                   <button
@@ -1586,11 +2447,10 @@ function StudyNotebooksPanel() {
                     disabled={!!answered}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-xs font-semibold text-left transition-all ${style}`}
                   >
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border ${
-                      answered && isRight ? "bg-accent text-white border-accent"
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border ${answered && isRight ? "bg-accent text-white border-accent"
                       : answered && isSelected && !isRight ? "bg-red-400 text-white border-red-400"
-                      : "bg-muted border-border text-muted-foreground"
-                    }`}>
+                        : "bg-muted border-border text-muted-foreground"
+                      }`}>
                       {opt.label}
                     </span>
                     {opt.text}
@@ -1608,6 +2468,18 @@ function StudyNotebooksPanel() {
               </div>
             )}
 
+            {/* Submit button when all questions are answered */}
+            {allAnswered && linkedNotes.length > 0 && (
+              <button
+                onClick={handleSubmitQuiz}
+                disabled={submitting}
+                className="w-full mt-2 py-2.5 rounded-xl bg-accent text-white text-xs font-bold shadow-md hover:bg-accent/90 disabled:opacity-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Award className="w-4 h-4" />
+                {submitting ? "Submitting..." : "Submit Quiz Results"}
+              </button>
+            )}
+
             {/* Nav */}
             <div className="flex items-center justify-between pt-1">
               <button
@@ -1619,7 +2491,7 @@ function StudyNotebooksPanel() {
               </button>
               <button
                 onClick={handleNext}
-                disabled={quizIdx === QUIZ_QUESTIONS.length - 1}
+                disabled={quizIdx === finalQuizQuestions.length - 1}
                 className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-30 transition"
               >
                 Next →
@@ -1665,35 +2537,35 @@ function StudyNotebooksPanel() {
 
 const TOOLBAR_GROUPS = [
   [
-    { icon: Bold,         label: "Bold"         },
-    { icon: Italic,       label: "Italic"       },
-    { icon: Underline,    label: "Underline"    },
+    { icon: Bold, label: "Bold" },
+    { icon: Italic, label: "Italic" },
+    { icon: Underline, label: "Underline" },
   ],
   [
-    { icon: AlignLeft,    label: "Align left"   },
-    { icon: List,         label: "Bullet list"  },
-    { icon: ListOrdered,  label: "Ordered list" },
-    { icon: Quote,        label: "Blockquote"   },
+    { icon: AlignLeft, label: "Align left" },
+    { icon: List, label: "Bullet list" },
+    { icon: ListOrdered, label: "Ordered list" },
+    { icon: Quote, label: "Blockquote" },
   ],
   [
-    { icon: Type,         label: "Heading"      },
+    { icon: Type, label: "Heading" },
   ],
 ];
 
 
-function CreateNoteMain({ onSave }: { onSave: () => void }) {
-  const [title,        setTitle]        = useState("");
-  const [body,         setBody]         = useState("");
-  const [subject,      setSubject]      = useState("");
-  const [isDragging,   setIsDragging]   = useState(false);
-  const [showImport,   setShowImport]   = useState(false);
+function CreateNoteMain({ onSave }: { onSave: (note: { titulo: string; contenido: string; subject: string }) => void }) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [subject, setSubject] = useState("OOP");
+  const [isDragging, setIsDragging] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
   const charCount = body.length;
 
-  const handleDragOver  = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = () => setIsDragging(false);
-  const handleDrop      = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     setShowImport(true);
@@ -1707,16 +2579,24 @@ function CreateNoteMain({ onSave }: { onSave: () => void }) {
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold text-primary uppercase tracking-widest">Create New Note</p>
           <span className="text-border">·</span>
-          <input
-            type="text"
-            placeholder="Subject..."
+          <select
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            className="text-xs font-semibold text-muted-foreground bg-muted border border-border rounded-lg px-2.5 py-1.5 w-36 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:text-foreground transition placeholder:font-normal"
-          />
+            className="text-xs font-semibold text-muted-foreground bg-muted border border-border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:text-foreground transition appearance-none cursor-pointer"
+          >
+            {SUBJECT_FILTERS.filter(f => f !== "All Subjects").map((f) => (
+              <option key={f} value={f}>{f}</option>
+            ))}
+          </select>
         </div>
         <button
-          onClick={onSave}
+          onClick={() => {
+            if (!title.trim()) {
+              toast.error("Please enter a title for the note.");
+              return;
+            }
+            onSave({ titulo: title, contenido: body, subject: subject });
+          }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
         >
           <Save className="w-4 h-4" />
@@ -1775,11 +2655,10 @@ function CreateNoteMain({ onSave }: { onSave: () => void }) {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => setShowImport(true)}
-          className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
-            isDragging
-              ? "border-primary bg-primary/5 scale-[1.01]"
-              : "border-border hover:border-primary/40 hover:bg-muted/40"
-          }`}
+          className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${isDragging
+            ? "border-primary bg-primary/5 scale-[1.01]"
+            : "border-border hover:border-primary/40 hover:bg-muted/40"
+            }`}
         >
           <div className={`p-2.5 rounded-xl transition-colors ${isDragging ? "bg-primary/15" : "bg-muted"}`}>
             <Upload className={`w-5 h-5 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
@@ -1840,13 +2719,13 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 }
 
 function SettingsMain() {
-  const [name,          setName]         = useState("Raúl Andrade");
-  const [email,         setEmail]        = useState("r.andrade@ufrontera.cl");
-  const [institution,   setInstitution]  = useState("Universidad de La Frontera");
-  const [apiKey,        setApiKey]       = useState("AIzaSy••••••••••••••••••••••");
-  const [showKey,       setShowKey]      = useState(false);
-  const [emailRemind,   setEmailRemind]  = useState(true);
-  const [defaultSubj,   setDefaultSubj] = useState("OOP");
+  const [name, setName] = useState("Raúl Andrade");
+  const [email, setEmail] = useState("r.andrade@ufrontera.cl");
+  const [institution, setInstitution] = useState("Universidad de La Frontera");
+  const [apiKey, setApiKey] = useState("AIzaSy••••••••••••••••••••••");
+  const [showKey, setShowKey] = useState(false);
+  const [emailRemind, setEmailRemind] = useState(true);
+  const [defaultSubj, setDefaultSubj] = useState("OOP");
 
   return (
     <main className="flex-1 min-w-0 overflow-y-auto px-8 py-8">
@@ -2066,10 +2945,10 @@ const STUDY_MODES = [
 ];
 
 const DIFFICULTY_OPTIONS = ["Easy", "Medium", "Hard"];
-const QUESTION_COUNTS    = [5, 10, 15, 20];
-const TIME_OPTIONS       = ["No limit", "5 min", "10 min", "20 min"];
+const QUESTION_COUNTS = [5, 10, 15, 20];
+const TIME_OPTIONS = ["No limit", "5 min", "10 min", "20 min"];
 
-const handleLaunchSession = () => {};
+const handleLaunchSession = () => { };
 
 // ─────────────────────────────────────────────
 // Study Hub — Right Config Panel
@@ -2133,11 +3012,10 @@ function StudyHubPanel({
               <button
                 key={d}
                 onClick={() => setDifficulty(d)}
-                className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-all ${
-                  difficulty === d
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
-                }`}
+                className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-all ${difficulty === d
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                  }`}
               >
                 {d}
               </button>
@@ -2155,11 +3033,10 @@ function StudyHubPanel({
               <button
                 key={n}
                 onClick={() => setQCount(n)}
-                className={`py-2 text-xs font-bold rounded-xl border transition-all ${
-                  qCount === n
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
-                }`}
+                className={`py-2 text-xs font-bold rounded-xl border transition-all ${qCount === n
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                  }`}
               >
                 {n}
               </button>
@@ -2177,11 +3054,10 @@ function StudyHubPanel({
               <button
                 key={t}
                 onClick={() => setTimeLimit(t)}
-                className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
-                  timeLimit === t
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
-                }`}
+                className={`py-2 text-xs font-semibold rounded-xl border transition-all ${timeLimit === t
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                  }`}
               >
                 {t}
               </button>
@@ -2213,11 +3089,11 @@ function StudyHubPanel({
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Session Preview</p>
           <div className="space-y-1">
             {[
-              ["Mode",       selectedMode?.title ?? "—"],
+              ["Mode", selectedMode?.title ?? "—"],
               ["Difficulty", difficulty],
-              ["Questions",  `${qCount} items`],
-              ["Time",       timeLimit],
-              ["Scope",      "All linked notes"],
+              ["Questions", `${qCount} items`],
+              ["Time", timeLimit],
+              ["Scope", "All linked notes"],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between text-[11px]">
                 <span className="text-muted-foreground">{k}</span>
@@ -2287,11 +3163,10 @@ function StudyHubMain({
               <button
                 key={mode.id}
                 onClick={() => setSelectedMode(mode.id)}
-                className={`group relative text-left p-6 rounded-2xl border-2 bg-gradient-to-br transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${mode.gradient} ${
-                  isActive
-                    ? "shadow-lg -translate-y-0.5"
-                    : "border-border hover:border-opacity-60"
-                }`}
+                className={`group relative text-left p-6 rounded-2xl border-2 bg-gradient-to-br transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${mode.gradient} ${isActive
+                  ? "shadow-lg -translate-y-0.5"
+                  : "border-border hover:border-opacity-60"
+                  }`}
                 style={isActive ? { borderColor: mode.borderActive } : {}}
                 aria-pressed={isActive}
               >
@@ -2374,12 +3249,12 @@ function StudyHubMain({
 // ─────────────────────────────────────────────
 
 const VIEWER_NOTE_LIST = [
-  { id: 1, title: "Lesson 1: Intro to Classes & Objects",   snippet: "A class is a blueprint for creating objects...", active: false },
-  { id: 2, title: "Lesson 2: Encapsulation",                snippet: "Encapsulation hides internal state using access...", active: false },
-  { id: 3, title: "Lesson 3: Inheritance in Java",          snippet: "Inheritance allows a child class to acquire...", active: false },
-  { id: 4, title: "Lesson 4: Polymorphism and Interfaces",  snippet: "Polymorphism enables one interface to be used...", active: true  },
-  { id: 5, title: "Lesson 5: Abstract Classes",             snippet: "Abstract classes cannot be instantiated and may...", active: false },
-  { id: 6, title: "Lesson 6: Design Patterns",              snippet: "Design patterns are reusable solutions to common...", active: false },
+  { id: 1, title: "Lesson 1: Intro to Classes & Objects", snippet: "A class is a blueprint for creating objects...", active: false },
+  { id: 2, title: "Lesson 2: Encapsulation", snippet: "Encapsulation hides internal state using access...", active: false },
+  { id: 3, title: "Lesson 3: Inheritance in Java", snippet: "Inheritance allows a child class to acquire...", active: false },
+  { id: 4, title: "Lesson 4: Polymorphism and Interfaces", snippet: "Polymorphism enables one interface to be used...", active: true },
+  { id: 5, title: "Lesson 5: Abstract Classes", snippet: "Abstract classes cannot be instantiated and may...", active: false },
+  { id: 6, title: "Lesson 6: Design Patterns", snippet: "Design patterns are reusable solutions to common...", active: false },
 ];
 
 const CHAT_MESSAGES = [
@@ -2423,13 +3298,13 @@ const VIEWER_QUIZ = [
   {
     id: 1,
     question: "Which type of polymorphism is resolved at runtime?",
-    options: [{ label:"A", text:"Method overloading" }, { label:"B", text:"Method overriding" }, { label:"C", text:"Operator overloading" }],
+    options: [{ label: "A", text: "Method overloading" }, { label: "B", text: "Method overriding" }, { label: "C", text: "Operator overloading" }],
     correct: "B",
   },
   {
     id: 2,
     question: "Can a Java class implement more than one interface?",
-    options: [{ label:"A", text:"No, only one" }, { label:"B", text:"Yes, multiple" }, { label:"C", text:"Only abstract classes" }],
+    options: [{ label: "A", text: "No, only one" }, { label: "B", text: "Yes, multiple" }, { label: "C", text: "Only abstract classes" }],
     correct: "B",
   },
 ];
@@ -2438,16 +3313,46 @@ const VIEWER_QUIZ = [
 // Note Viewer Screen
 // ─────────────────────────────────────────────
 
-function NoteViewerScreen({ onBack, darkMode, context = "notes" }: {
+function NoteViewerScreen({ onBack, darkMode, context = "notes", note, onDelete, onSave }: {
   onBack: () => void;
   darkMode: boolean;
   context?: "notes" | "study";
+  note: any;
+  onDelete?: (id: string) => Promise<boolean>;
+  onSave?: (note: any, id?: string) => Promise<boolean>;
 }) {
-  const [editMode,   setEditMode]  = useState(false);
-  const [aiTab,      setAiTab]     = useState<"chat"|"summary"|"quiz">("chat");
-  const [chatMsg,    setChatMsg]   = useState("");
-  const [quizAnswers,setQA]        = useState<Record<number,string>>({});
+  const [editMode, setEditMode] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedContent, setEditedContent] = useState("");
+  const [editedSubject, setEditedSubject] = useState("OOP");
+  const [aiTab, setAiTab] = useState<"chat" | "summary" | "quiz">("chat");
+  const [chatMsg, setChatMsg] = useState("");
+  const [quizAnswers, setQA] = useState<Record<number, string>>({});
   const [sideCollapsed, setSideCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (note) {
+      setEditedTitle(note.titulo || note.title || "");
+      setEditedContent(note.contenido || note.preview || "");
+      setEditedSubject(note.subject || "OOP");
+    }
+  }, [note]);
+
+  const handleSaveEdit = async () => {
+    if (note && note.id) {
+      const success = await onSave?.({
+        titulo: editedTitle,
+        contenido: editedContent,
+        subject: editedSubject,
+      }, note.id);
+      if (success) {
+        toast.success("Note updated successfully!");
+        setEditMode(false);
+      }
+    } else {
+      setEditMode(false);
+    }
+  };
 
   const handleQuizAnswer = (qid: number, label: string) => {
     if (!quizAnswers[qid]) setQA(prev => ({ ...prev, [qid]: label }));
@@ -2502,11 +3407,10 @@ function NoteViewerScreen({ onBack, darkMode, context = "notes" }: {
               })) : VIEWER_NOTE_LIST).map((note) => (
                 <button
                   key={note.id}
-                  className={`w-full text-left flex items-start gap-2.5 px-3 py-2.5 mx-1 rounded-xl transition-all ${
-                    note.active
-                      ? "bg-primary/10 border border-primary/20"
-                      : "hover:bg-muted border border-transparent"
-                  }`}
+                  className={`w-full text-left flex items-start gap-2.5 px-3 py-2.5 mx-1 rounded-xl transition-all ${note.active
+                    ? "bg-primary/10 border border-primary/20"
+                    : "hover:bg-muted border border-transparent"
+                    }`}
                   style={{ width: "calc(100% - 8px)" }}
                 >
                   <FileText className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${note.active ? "text-primary" : "text-muted-foreground"}`} />
@@ -2543,17 +3447,17 @@ function NoteViewerScreen({ onBack, darkMode, context = "notes" }: {
         <div className="flex items-center justify-between px-8 py-4 bg-card border-b border-border shrink-0">
           <div className="min-w-0">
             <h1 className="text-base font-extrabold text-foreground tracking-tight truncate">
-              POO — Lesson 4: Polymorphism and Interfaces
+              {note ? (note.titulo || note.title) : "POO — Lesson 4: Polymorphism and Interfaces"}
             </h1>
             <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
               <Clock className="w-3 h-3" />
-              Last saved · Jun 20, 2026 at 2:28 PM
+              {note && note.createdAt ? `Last saved · ${new Date(note.createdAt).toLocaleString()}` : "Last saved · Jun 20, 2026 at 2:28 PM"}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-4">
             {context === "study" && (
               <button
-                onClick={() => {}}
+                onClick={() => { }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-violet-300 dark:border-violet-500/40 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-all"
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -2561,12 +3465,17 @@ function NoteViewerScreen({ onBack, darkMode, context = "notes" }: {
               </button>
             )}
             <button
-              onClick={() => setEditMode(e => !e)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                editMode
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-muted border-border text-foreground hover:border-primary/40"
-              }`}
+              onClick={() => {
+                if (editMode) {
+                  handleSaveEdit();
+                } else {
+                  setEditMode(true);
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${editMode
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-muted border-border text-foreground hover:border-primary/40"
+                }`}
             >
               <Pencil className="w-3.5 h-3.5" />
               {editMode ? "Save Note" : "Edit Note"}
@@ -2574,7 +3483,23 @@ function NoteViewerScreen({ onBack, darkMode, context = "notes" }: {
             <button className="p-2 rounded-xl border border-border hover:bg-muted transition text-muted-foreground" aria-label="Share">
               <Share2 className="w-4 h-4" />
             </button>
-            <button className="p-2 rounded-xl border border-border hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200 hover:text-red-500 transition text-muted-foreground" aria-label="Delete">
+            <button
+              onClick={async () => {
+                if (note && note.id) {
+                  if (confirm("Are you sure you want to delete this note?")) {
+                    const success = await onDelete?.(note.id);
+                    if (success) {
+                      toast.success("Note deleted successfully!");
+                      onBack();
+                    }
+                  }
+                } else {
+                  toast.error("Mock notes cannot be deleted.");
+                }
+              }}
+              className="p-2 rounded-xl border border-border hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200 hover:text-red-500 transition text-muted-foreground"
+              aria-label="Delete"
+            >
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
@@ -2583,76 +3508,125 @@ function NoteViewerScreen({ onBack, darkMode, context = "notes" }: {
         {/* Content area */}
         <div className="flex-1 overflow-y-auto px-12 py-10">
           <article className="max-w-2xl mx-auto space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
-
-            {/* H1 */}
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight leading-tight">
-              Polymorphism and Interfaces in Java
-            </h1>
-
-            {/* Intro paragraph */}
-            <p className="text-sm text-foreground leading-7">
-              Polymorphism is one of the four fundamental pillars of Object-Oriented Programming.
-              The word comes from Greek and means <span className="bg-primary/15 text-primary font-semibold px-1 rounded">"many forms"</span>.
-              In Java, polymorphism allows a single interface to represent different underlying data types,
-              enabling code that is both flexible and reusable.
-            </p>
-
-            {/* H2 */}
-            <div className="flex items-center gap-2 pt-2">
-              <Hash className="w-4 h-4 text-primary shrink-0" />
-              <h2 className="text-base font-bold text-foreground">Types of Polymorphism</h2>
-            </div>
-
-            {/* Highlight block */}
-            <div className="pl-4 border-l-4 border-primary bg-primary/5 py-3 pr-4 rounded-r-xl">
-              <p className="text-sm text-foreground leading-7">
-                Java supports two types of polymorphism:{" "}
-                <span className="font-bold text-primary">compile-time</span> (method overloading) and{" "}
-                <span className="font-bold text-primary">runtime</span> (method overriding).
-                Understanding the difference is essential for writing maintainable OOP systems.
-              </p>
-            </div>
-
-            {/* Bullet list */}
-            <ul className="space-y-2.5">
-              {[
-                { term: "Method Overloading", def: "Same method name, different parameter signatures. Resolved at compile time by the Java compiler." },
-                { term: "Method Overriding", def: "Subclass redefines a superclass method. Resolved at runtime via dynamic dispatch (late binding)." },
-                { term: "@Override annotation", def: "Best practice when overriding — the compiler validates that the method signature matches the parent's." },
-              ].map(({ term, def }) => (
-                <li key={term} className="flex items-start gap-3 text-sm text-foreground leading-6">
-                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                  <span><span className="font-bold">{term}</span> — {def}</span>
-                </li>
-              ))}
-            </ul>
-
-            {/* H2 */}
-            <div className="flex items-center gap-2 pt-2">
-              <Hash className="w-4 h-4 text-primary shrink-0" />
-              <h2 className="text-base font-bold text-foreground">Interface Declaration</h2>
-            </div>
-
-            <p className="text-sm text-foreground leading-7">
-              An <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-semibold px-1 rounded">interface</span> in Java defines a contract — a set of method signatures that any implementing class must provide.
-              Unlike abstract classes, interfaces support multiple inheritance, allowing a class to implement several interfaces simultaneously.
-            </p>
-
-            {/* Code block */}
-            <div className="rounded-xl overflow-hidden border border-border shadow-sm">
-              <div className="flex items-center justify-between px-4 py-2 bg-slate-800 dark:bg-slate-900">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-red-400" />
-                    <span className="w-3 h-3 rounded-full bg-amber-400" />
-                    <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-mono ml-2">Polymorphism.java</span>
+            {editMode ? (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Title</label>
+                  <input
+                    type="text"
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground font-bold"
+                    placeholder="Note Title"
+                  />
                 </div>
-                <Code2 className="w-3.5 h-3.5 text-slate-400" />
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Subject</label>
+                  <select
+                    value={editedSubject}
+                    onChange={(e) => setEditedSubject(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-card border border-border rounded-xl text-foreground text-sm"
+                  >
+                    {SUBJECT_FILTERS.filter(f => f !== "All Subjects").map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Content</label>
+                  <textarea
+                    value={editedContent}
+                    onChange={(e) => setEditedContent(e.target.value)}
+                    className="w-full min-h-[300px] text-sm text-foreground bg-card border border-border rounded-xl p-4 outline-none resize-none leading-7"
+                    placeholder="Start writing..."
+                  />
+                </div>
               </div>
-              <pre className="bg-slate-900 text-slate-100 text-xs leading-6 px-5 py-4 overflow-x-auto font-mono">
-{`interface Speakable {
+            ) : note ? (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#F3F4F6', color: '#111' }}>
+                    {note.subject || "General"}
+                  </span>
+                </div>
+                <h1 className="text-2xl font-extrabold text-foreground tracking-tight leading-tight">
+                  {note.titulo || note.title}
+                </h1>
+                <div className="text-sm text-foreground leading-7 whitespace-pre-wrap">
+                  {note.contenido || note.preview}
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* H1 */}
+                <h1 className="text-2xl font-extrabold text-foreground tracking-tight leading-tight">
+                  Polymorphism and Interfaces in Java
+                </h1>
+
+                {/* Intro paragraph */}
+                <p className="text-sm text-foreground leading-7">
+                  Polymorphism is one of the four fundamental pillars of Object-Oriented Programming.
+                  The word comes from Greek and means <span className="bg-primary/15 text-primary font-semibold px-1 rounded">"many forms"</span>.
+                  In Java, polymorphism allows a single interface to represent different underlying data types,
+                  enabling code that is both flexible and reusable.
+                </p>
+
+                {/* H2 */}
+                <div className="flex items-center gap-2 pt-2">
+                  <Hash className="w-4 h-4 text-primary shrink-0" />
+                  <h2 className="text-base font-bold text-foreground">Types of Polymorphism</h2>
+                </div>
+
+                {/* Highlight block */}
+                <div className="pl-4 border-l-4 border-primary bg-primary/5 py-3 pr-4 rounded-r-xl">
+                  <p className="text-sm text-foreground leading-7">
+                    Java supports two types of polymorphism:{" "}
+                    <span className="font-bold text-primary">compile-time</span> (method overloading) and{" "}
+                    <span className="font-bold text-primary">runtime</span> (method overriding).
+                    Understanding the difference is essential for writing maintainable OOP systems.
+                  </p>
+                </div>
+
+                {/* Bullet list */}
+                <ul className="space-y-2.5">
+                  {[
+                    { term: "Method Overloading", def: "Same method name, different parameter signatures. Resolved at compile time by the Java compiler." },
+                    { term: "Method Overriding", def: "Subclass redefines a superclass method. Resolved at runtime via dynamic dispatch (late binding)." },
+                    { term: "@Override annotation", def: "Best practice when overriding — the compiler validates that the method signature matches the parent's." },
+                  ].map(({ term, def }) => (
+                    <li key={term} className="flex items-start gap-3 text-sm text-foreground leading-6">
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                      <span><span className="font-bold">{term}</span> — {def}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* H2 */}
+                <div className="flex items-center gap-2 pt-2">
+                  <Hash className="w-4 h-4 text-primary shrink-0" />
+                  <h2 className="text-base font-bold text-foreground">Interface Declaration</h2>
+                </div>
+
+                <p className="text-sm text-foreground leading-7">
+                  An <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-semibold px-1 rounded">interface</span> in Java defines a contract — a set of method signatures that any implementing class must provide.
+                  Unlike abstract classes, interfaces support multiple inheritance, allowing a class to implement several interfaces simultaneously.
+                </p>
+
+                {/* Code block */}
+                <div className="rounded-xl overflow-hidden border border-border shadow-sm">
+                  <div className="flex items-center justify-between px-4 py-2 bg-slate-800 dark:bg-slate-900">
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-red-400" />
+                        <span className="w-3 h-3 rounded-full bg-amber-400" />
+                        <span className="w-3 h-3 rounded-full bg-emerald-400" />
+                      </div>
+                      <span className="text-[11px] text-slate-400 font-mono ml-2">Polymorphism.java</span>
+                    </div>
+                    <Code2 className="w-3.5 h-3.5 text-slate-400" />
+                  </div>
+                  <pre className="bg-slate-900 text-slate-100 text-xs leading-6 px-5 py-4 overflow-x-auto font-mono">
+                    {`interface Speakable {
     void speak();
     default String greet() {
         return "Hello from " + getClass().getSimpleName();
@@ -2676,17 +3650,18 @@ class Cat implements Speakable {
 // Runtime polymorphism in action:
 Speakable animal = new Dog();
 animal.speak(); // → "Woof!"`}
-              </pre>
-            </div>
+                  </pre>
+                </div>
 
-            {/* Closing note */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-accent/10 border border-accent/20">
-              <Lightbulb className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-              <p className="text-xs text-foreground leading-relaxed">
-                <span className="font-bold text-accent">Study tip:</span> The key distinction to remember for exams — interfaces define <em>what</em> a class does, while abstract classes define <em>what</em> and <em>how</em> (partially). Use interfaces for contracts, abstract classes for shared base behavior.
-              </p>
-            </div>
-
+                {/* Closing note */}
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-accent/10 border border-accent/20">
+                  <Lightbulb className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                  <p className="text-xs text-foreground leading-relaxed">
+                    <span className="font-bold text-accent">Study tip:</span> The key distinction to remember for exams — interfaces define <em>what</em> a class does, while abstract classes define <em>what</em> and <em>how</em> (partially). Use interfaces for contracts, abstract classes for shared base behavior.
+                  </p>
+                </div>
+              </>
+            )}
           </article>
         </div>
       </main>
@@ -2706,15 +3681,14 @@ animal.speak(); // → "Woof!"`}
           </div>
           {/* 3 tabs */}
           <div className="flex gap-1 p-1 bg-muted rounded-xl">
-            {(["chat","summary","quiz"] as const).map((tab) => (
+            {(["chat", "summary", "quiz"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setAiTab(tab)}
-                className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg capitalize transition-all ${
-                  aiTab === tab
-                    ? "bg-card text-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg capitalize transition-all ${aiTab === tab
+                  ? "bg-card text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {tab === "chat" ? "AI Chat" : tab === "summary" ? "Summary" : "Quizzes"}
               </button>
@@ -2738,11 +3712,10 @@ animal.speak(); // → "Woof!"`}
                     )}
                     <div className={`max-w-[82%] space-y-1.5`}>
                       <div
-                        className={`px-3 py-2.5 rounded-2xl text-[11px] leading-relaxed ${
-                          msg.role === "user"
-                            ? "bg-primary text-white rounded-tr-sm"
-                            : "bg-muted text-foreground rounded-tl-sm border border-border"
-                        }`}
+                        className={`px-3 py-2.5 rounded-2xl text-[11px] leading-relaxed ${msg.role === "user"
+                          ? "bg-primary text-white rounded-tr-sm"
+                          : "bg-muted text-foreground rounded-tl-sm border border-border"
+                          }`}
                       >
                         {msg.text.split("```java")[0].split("\n\n").map((para, i) => (
                           <p key={i} className={i > 0 ? "mt-2" : ""}>
@@ -2804,18 +3777,18 @@ animal.speak(); // → "Woof!"`}
                 return (
                   <div key={q.id} className="space-y-3">
                     <div className="flex items-start gap-2">
-                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md shrink-0">Q{qi+1}</span>
+                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md shrink-0">Q{qi + 1}</span>
                       <p className="text-xs font-bold text-foreground leading-snug">{q.question}</p>
                     </div>
                     <div className="space-y-1.5">
                       {q.options.map((opt) => {
                         const isSelected = ans === opt.label;
-                        const isCorrect  = opt.label === q.correct;
+                        const isCorrect = opt.label === q.correct;
                         let cls = "bg-card border-border text-foreground hover:bg-muted hover:border-primary/30";
                         if (ans) {
-                          if (isCorrect)           cls = "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 text-emerald-800 dark:text-emerald-300";
-                          else if (isSelected)     cls = "bg-red-50 dark:bg-red-500/10 border-red-300 text-red-700 dark:text-red-400";
-                          else                     cls = "bg-card border-border text-muted-foreground opacity-50";
+                          if (isCorrect) cls = "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 text-emerald-800 dark:text-emerald-300";
+                          else if (isSelected) cls = "bg-red-50 dark:bg-red-500/10 border-red-300 text-red-700 dark:text-red-400";
+                          else cls = "bg-card border-border text-muted-foreground opacity-50";
                         }
                         return (
                           <button
@@ -2824,13 +3797,12 @@ animal.speak(); // → "Woof!"`}
                             onClick={() => handleQuizAnswer(q.id, opt.label)}
                             className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-[11px] font-medium text-left transition-all ${cls}`}
                           >
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border ${
-                              ans && isCorrect ? "bg-accent text-white border-accent"
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border ${ans && isCorrect ? "bg-accent text-white border-accent"
                               : ans && isSelected ? "bg-red-400 text-white border-red-400"
-                              : "bg-muted border-border text-muted-foreground"
-                            }`}>{opt.label}</span>
+                                : "bg-muted border-border text-muted-foreground"
+                              }`}>{opt.label}</span>
                             {opt.text}
-                            {ans && isCorrect  && <CheckCircle2 className="w-3.5 h-3.5 ml-auto text-accent" />}
+                            {ans && isCorrect && <CheckCircle2 className="w-3.5 h-3.5 ml-auto text-accent" />}
                             {ans && isSelected && !isCorrect && <X className="w-3.5 h-3.5 ml-auto text-red-400" />}
                           </button>
                         );
@@ -2882,35 +3854,298 @@ animal.speak(); // → "Woof!"`}
 // ─────────────────────────────────────────────
 
 export default function App() {
-  const [activeNav,    setActiveNav]    = useState("Login");
-  const [nbFilter,     setNbFilter]     = useState("All Subjects");
-  const [viewMode,     setViewMode]     = useState<"grid" | "list">("grid");
-  const [showImport,   setShowImport]   = useState(false);
-  const [darkMode,     setDarkMode]     = useState(false);
-  const [hubMode,      setHubMode]      = useState("quiz");
-  const [hubDiff,      setHubDiff]      = useState("Medium");
-  const [hubQCount,    setHubQCount]    = useState(10);
-  const [hubTime,      setHubTime]      = useState("No limit");
-  const [noteViewerSource, setNoteViewerSource] = useState<"notes"|"study">("notes");
+  const [activeNav, setActiveNav] = useState("Login");
+  const [nbFilter, setNbFilter] = useState("All Subjects");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showImport, setShowImport] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [hubMode, setHubMode] = useState("quiz");
+  const [hubDiff, setHubDiff] = useState("Medium");
+  const [hubQCount, setHubQCount] = useState(10);
+  const [hubTime, setHubTime] = useState("No limit");
+  const [noteViewerSource, setNoteViewerSource] = useState<"notes" | "study">("notes");
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [notes, setNotes] = useState<any[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [cuadernos, setCuadernos] = useState<any[]>([]);
+  const [cuadernosLoading, setCuadernosLoading] = useState(false);
+  const [selectedCuadernoId, setSelectedCuadernoId] = useState<string | null>(null);
+  const [goals, setGoals] = useState<any[]>([]);
+  const [goalsLoading, setGoalsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [selectedNote, setSelectedNote] = useState<any>(null);
 
-  const isLogin       = activeNav === "Login";
-  const isRegister    = activeNav === "Register";
-  const isNotebooks   = activeNav === "My Notes";
-  const isStudy       = activeNav === "Study Notebooks";
-  const isCreateNote  = activeNav === "Create Note";
-  const isSettings    = activeNav === "Settings";
-  const isHub         = activeNav === "Study Hub";
-  const isNoteViewer  = activeNav === "Note Viewer";
+  const loadDashboard = async () => {
+    try {
+      const res = await fetch('/api/dashboard');
+      if (!res.ok) throw new Error('Dashboard fetch failed');
+      const data = await res.json();
+      setDashboard(data);
+    } catch (error) {
+      console.error('Dashboard load failed', error);
+    }
+  };
 
+  const loadNotes = async () => {
+    try {
+      setNotesLoading(true);
+      const res = await fetch('/api/notas');
+      if (!res.ok) throw new Error('Notes fetch failed');
+      const data = await res.json();
+      setNotes(data || []);
+    } catch (error) {
+      console.error('Notes load failed', error);
+    } finally {
+      setNotesLoading(false);
+    }
+  };
+
+  const loadCuadernos = async () => {
+    try {
+      setCuadernosLoading(true);
+      const res = await fetch('/api/cuadernos');
+      if (!res.ok) throw new Error('Cuadernos fetch failed');
+      const data = await res.json();
+      setCuadernos(data || []);
+    } catch (error) {
+      console.error('Cuadernos load failed', error);
+    } finally {
+      setCuadernosLoading(false);
+    }
+  };
+
+  const saveCuaderno = async (cuaderno: any, id?: string) => {
+    try {
+      const endpoint = id ? `/api/cuadernos/${id}` : '/api/cuadernos';
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuaderno),
+      });
+      if (!res.ok) throw new Error('Save cuaderno failed');
+      await loadCuadernos();
+      return true;
+    } catch (error) {
+      console.error('Cuaderno save failed', error);
+      return false;
+    }
+  };
+
+  const deleteCuaderno = async (id?: string) => {
+    if (!id) return false;
+    try {
+      const res = await fetch(`/api/cuadernos/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete cuaderno failed');
+      await loadCuadernos();
+      if (selectedCuadernoId === id) {
+        setSelectedCuadernoId(null);
+      }
+      return true;
+    } catch (error) {
+      console.error('Cuaderno delete failed', error);
+      return false;
+    }
+  };
+
+  const loadGoals = async () => {
+    try {
+      setGoalsLoading(true);
+      const res = await fetch('/api/goals');
+      if (!res.ok) throw new Error('Goals fetch failed');
+      const data = await res.json();
+      setGoals(data || []);
+    } catch (error) {
+      console.error('Goals load failed', error);
+    } finally {
+      setGoalsLoading(false);
+    }
+  };
+
+  const saveGoal = async (goal: any, id?: string) => {
+    try {
+      const endpoint = id ? `/api/goals/${id}` : '/api/goals';
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(goal),
+      });
+      if (!res.ok) throw new Error('Save goal failed');
+      await loadGoals();
+      return true;
+    } catch (error) {
+      console.error('Goal save failed', error);
+      return false;
+    }
+  };
+
+  const deleteGoal = async (id?: string) => {
+    if (!id) return false;
+    try {
+      const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete goal failed');
+      await loadGoals();
+      return true;
+    } catch (error) {
+      console.error('Goal delete failed', error);
+      return false;
+    }
+  };
+
+  const deleteQuiz = async (id?: string) => {
+    if (!id) return false;
+    try {
+      const res = await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete quiz failed');
+      await loadDashboard();
+      return true;
+    } catch (error) {
+      console.error('Quiz delete failed', error);
+      return false;
+    }
+  };
+
+  const saveQuiz = async (quiz: any) => {
+    try {
+      const res = await fetch('/api/quizzes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quiz),
+      });
+      if (!res.ok) throw new Error('Save quiz failed');
+      await loadDashboard();
+      return true;
+    } catch (error) {
+      console.error('Quiz save failed', error);
+      return false;
+    }
+  };
+
+  const saveNote = async (note: any, id?: string) => {
+    try {
+      const endpoint = id ? `/api/notas/${id}` : '/api/notas';
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(note),
+      });
+      if (!res.ok) throw new Error('Save note failed');
+      await loadNotes();
+      await loadDashboard();
+      return true;
+    } catch (error) {
+      console.error('Note save failed', error);
+      return false;
+    }
+  };
+
+  const deleteNote = async (id?: string) => {
+    if (!id) return false;
+    try {
+      const res = await fetch(`/api/notas/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete note failed');
+      await loadNotes();
+      await loadDashboard();
+      return true;
+    } catch (error) {
+      console.error('Note delete failed', error);
+      return false;
+    }
+  };
+
+  const openNoteViewer = (id: string, source: 'notes' | 'study') => {
+    setSelectedNoteId(id);
+    setNoteViewerSource(source);
+    setActiveNav('Note Viewer');
+  };
+
+  const handleSearch = (q: string) => setSearchQuery(q);
+
+  const handleCreateNote = async (note: any) => {
+    const success = await saveNote(note);
+    if (success) {
+      setActiveNav('My Notes');
+    }
+  };
+
+  const handleLaunchSession = async () => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const res = await fetch('/api/dashboard/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: today }),
+      });
+      if (!res.ok) throw new Error('Session record failed');
+      await loadDashboard();
+      setActiveNav('Home');
+    } catch (error) {
+      console.error('Session launch failed', error);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  useEffect(() => {
+    loadNotes();
+    loadCuadernos();
+    loadGoals();
+    loadDashboard();
+    const interval = setInterval(() => {
+      loadNotes();
+      loadCuadernos();
+      loadGoals();
+      loadDashboard();
+    }, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedNoteId) {
+      setSelectedNote(null);
+      return;
+    }
+
+    const loadNote = async () => {
+      try {
+        const res = await fetch(`/api/notas/${selectedNoteId}`);
+        if (!res.ok) throw new Error('Note fetch failed');
+        const data = await res.json();
+        setSelectedNote(data);
+      } catch (error) {
+        console.error('Selected note load failed', error);
+        setSelectedNote(null);
+      }
+    };
+
+    loadNote();
+  }, [selectedNoteId]);
+
+  const isLogin = activeNav === "Login";
+  const isRegister = activeNav === "Register";
+  const isNotebooks = activeNav === "My Notes";
+  const isStudy = activeNav === "Study Notebooks";
+  const isCreateNote = activeNav === "Create Note";
+  const isSettings = activeNav === "Settings";
+  const isHub = activeNav === "Study Hub";
+  const isNoteViewer = activeNav === "Note Viewer";
+
+  const activeCuadernoForHeader = cuadernos.find((c) => c.id === selectedCuadernoId);
   const rightPanelTitle = isStudy || isCreateNote ? "AI Study Assistant"
-                        : isNotebooks              ? "Notes Overview"
-                        : isSettings               ? "Account Info"
-                        :                            "Weekly Progress";
-  const rightPanelSub   = isStudy      ? "POO — 6 linked notes"
-                        : isCreateNote ? "Analyzing your note..."
-                        : isNotebooks  ? `${NOTEBOOKS.length} total notes`
-                        : isSettings   ? "Raúl Andrade · UFRO"
-                        :                "Jun 16 – Jun 20, 2026";
+    : isNotebooks ? "Notes Overview"
+      : isSettings ? "Account Info"
+        : "Weekly Progress";
+  const rightPanelSub = isStudy
+    ? (activeCuadernoForHeader ? `${activeCuadernoForHeader.titulo} — ${(activeCuadernoForHeader.noteIds || []).length} linked notes` : "Select a notebook to start")
+    : isCreateNote ? "Analyzing your note..."
+      : isNotebooks ? `${notes.length} total notes`
+        : isSettings ? "Raúl Andrade · UFRO"
+          : "Jun 16 – Jun 20, 2026";
 
   // ── Login ── full-page override
   if (isLogin) return (
@@ -2942,7 +4177,7 @@ export default function App() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Password</label>
-                <button type="button" onClick={() => {}} className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition">
+                <button type="button" onClick={() => { }} className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition">
                   Forgot password?
                 </button>
               </div>
@@ -2972,10 +4207,10 @@ export default function App() {
             className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
             Continue with Google
           </button>
@@ -3053,9 +4288,9 @@ export default function App() {
               <input type="checkbox" className="mt-0.5 w-4 h-4 rounded border-slate-600 bg-slate-900 accent-blue-500 cursor-pointer shrink-0" />
               <span className="text-[11px] text-slate-400 leading-relaxed">
                 I agree to the{" "}
-                <button type="button" onClick={() => {}} className="text-blue-400 font-semibold hover:underline underline-offset-2">Terms of Service</button>
+                <button type="button" onClick={() => { }} className="text-blue-400 font-semibold hover:underline underline-offset-2">Terms of Service</button>
                 {" "}and{" "}
-                <button type="button" onClick={() => {}} className="text-blue-400 font-semibold hover:underline underline-offset-2">Privacy Policy</button>
+                <button type="button" onClick={() => { }} className="text-blue-400 font-semibold hover:underline underline-offset-2">Privacy Policy</button>
               </span>
             </label>
 
@@ -3070,7 +4305,7 @@ export default function App() {
           <div className="mt-5 space-y-1.5">
             <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Password strength</p>
             <div className="flex gap-1">
-              {["bg-red-500","bg-amber-500","bg-blue-500","bg-slate-700"].map((c, i) => (
+              {["bg-red-500", "bg-amber-500", "bg-blue-500", "bg-slate-700"].map((c, i) => (
                 <div key={i} className={`flex-1 h-1 rounded-full ${c}`} />
               ))}
             </div>
@@ -3100,6 +4335,9 @@ export default function App() {
         onBack={() => setActiveNav(noteViewerSource === "study" ? "Study Notebooks" : "My Notes")}
         darkMode={darkMode}
         context={noteViewerSource}
+        note={selectedNote}
+        onDelete={deleteNote}
+        onSave={saveNote}
       />
     );
   }
@@ -3167,21 +4405,47 @@ export default function App() {
       {/* Body columns */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
-        {isCreateNote ? <CreateNoteMain onSave={() => setActiveNav("My Notes")} /> :
-         isHub        ? <StudyHubMain selectedMode={hubMode} setSelectedMode={setHubMode} onLaunch={handleLaunchSession} /> :
-         isStudy      ? <StudyNotebooksMain onStudy={() => setActiveNav("Study Hub")} onOpenNote={() => { setNoteViewerSource("study"); setActiveNav("Note Viewer"); }} /> :
-         isNotebooks  ? <NotebooksMain filter={nbFilter} setFilter={setNbFilter} viewMode={viewMode} setViewMode={setViewMode} onImport={() => setShowImport(true)} onCreateNote={() => setActiveNav("Create Note")} onStudy={() => setActiveNav("Study Hub")} onOpenNote={() => { setNoteViewerSource("notes"); setActiveNav("Note Viewer"); }} /> :
-         isSettings   ? <SettingsMain /> :
-                        <HomeMain />}
-        {isHub        ? <StudyHubPanel selectedMode={STUDY_MODES.find(m => m.id === hubMode)} difficulty={hubDiff} setDifficulty={setHubDiff} qCount={hubQCount} setQCount={setHubQCount} timeLimit={hubTime} setTimeLimit={setHubTime} onLaunch={handleLaunchSession} /> :
-         isCreateNote || isStudy ? <StudyNotebooksPanel /> :
-         isNotebooks              ? <NotebooksPanel /> :
-         isSettings               ? null :
-                                    <HomePanel />}
+        {isCreateNote ? <CreateNoteMain onSave={handleCreateNote} /> :
+          isHub ? <StudyHubMain selectedMode={hubMode} setSelectedMode={setHubMode} onLaunch={handleLaunchSession} /> :
+            isStudy ? (
+              <StudyNotebooksMain
+                notes={notes}
+                cuadernos={cuadernos}
+                selectedCuadernoId={selectedCuadernoId}
+                setSelectedCuadernoId={setSelectedCuadernoId}
+                onSaveCuaderno={saveCuaderno}
+                onDeleteCuaderno={deleteCuaderno}
+                onStudy={() => setActiveNav("Study Hub")}
+                onOpenNote={(id) => openNoteViewer(id, "study")}
+              />
+            ) :
+              isNotebooks ? <NotebooksMain filter={nbFilter} setFilter={setNbFilter} viewMode={viewMode} setViewMode={setViewMode} onImport={() => setShowImport(true)} onCreateNote={() => setActiveNav("Create Note")} onStudy={() => setActiveNav("Study Hub")} onOpenNote={(id) => openNoteViewer(id, "notes")} notes={notes} loading={notesLoading} onSave={saveNote} onDelete={deleteNote} /> :
+                isSettings ? <SettingsMain /> :
+                  <HomeMain dashboard={dashboard} />}
+        {isHub ? <StudyHubPanel selectedMode={STUDY_MODES.find(m => m.id === hubMode)} difficulty={hubDiff} setDifficulty={setHubDiff} qCount={hubQCount} setQCount={setHubQCount} timeLimit={hubTime} setTimeLimit={setHubTime} onLaunch={handleLaunchSession} /> :
+          isCreateNote || isStudy ? (
+            <StudyNotebooksPanel
+              onQuizSubmit={loadDashboard}
+              selectedCuaderno={cuadernos.find((c) => c.id === selectedCuadernoId)}
+              notes={notes}
+            />
+          ) :
+            isNotebooks ? <NotebooksPanel notes={notes} onOpenNote={(id) => openNoteViewer(id, "notes")} /> :
+              isSettings ? null :
+                <HomePanel
+                  dashboard={dashboard}
+                  goals={goals}
+                  onSaveGoal={saveGoal}
+                  onDeleteGoal={deleteGoal}
+                  onDeleteQuiz={deleteQuiz}
+                  onSaveQuiz={saveQuiz}
+                  notes={notes}
+                />}
       </div>
 
       {/* Import modal — rendered outside columns so it overlays everything */}
       {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
