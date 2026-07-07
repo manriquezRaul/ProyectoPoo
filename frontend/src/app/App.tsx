@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
+import { t } from "./translations";
 import {
   Hexagon, Clock, Search, Sun, Moon,
   X, Check, FolderArchive, FileText, Brain, Rocket,
@@ -18,6 +19,7 @@ import { SettingsMain } from "./components/screens/SettingsScreen";
 import { StudyHubMain, StudyHubPanel } from "./components/screens/StudyHubScreen";
 import { NoteViewerScreen } from "./components/screens/NoteViewerScreen";
 import { StudySessionScreen } from "./components/screens/StudySessionScreen";
+import { TestDetailScreen } from "./components/screens/TestDetailScreen";
 
 // ─────────────────────────────────────────────
 // Shared Constants and Types
@@ -34,11 +36,24 @@ export default function App() {
   const [nbFilter, setNbFilter] = useState("All Subjects");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showImport, setShowImport] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [hubMode, setHubMode] = useState("quiz");
-  const [hubDiff, setHubDiff] = useState("Medium");
-  const [hubQCount, setHubQCount] = useState(10);
-  const [hubTime, setHubTime] = useState("No limit");
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem("settings_darkMode");
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [hubMode, setHubMode] = useState<string>(() => {
+    return localStorage.getItem("settings_hubMode") || "quiz";
+  });
+  const [hubDiff, setHubDiff] = useState<string>(() => {
+    return localStorage.getItem("settings_hubDiff") || "Medium";
+  });
+  const [hubQCount, setHubQCount] = useState<number>(() => {
+    const saved = localStorage.getItem("settings_hubQCount");
+    return saved ? parseInt(saved, 10) : 10;
+  });
+  const [hubTime, setHubTime] = useState<string>(() => {
+    return localStorage.getItem("settings_hubTime") || "No limit";
+  });
+  const language = "Español";
   const [noteViewerSource, setNoteViewerSource] = useState<"notes" | "study">("notes");
   const [dashboard, setDashboard] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
@@ -53,6 +68,9 @@ export default function App() {
   const [selectedNote, setSelectedNote] = useState<any>(null);
   const [studySessionData, setStudySessionData] = useState<any>(null);
   const [studySessionLoading, setStudySessionLoading] = useState(false);
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [selectedQuizResult, setSelectedQuizResult] = useState<any>(null);
+  const [quizDetailSource, setQuizDetailSource] = useState<string>("Study Hub");
   const [hubScope, setHubScope] = useState<string>("Custom Selection");
   const [selectedNotebookIds, setSelectedNotebookIds] = useState<string[]>([]);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
@@ -76,6 +94,15 @@ export default function App() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("settings_darkMode", JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   const loadDashboard = async () => {
     try {
@@ -164,6 +191,17 @@ export default function App() {
     }
   };
 
+  const loadQuizzes = async () => {
+    try {
+      const res = await fetch('/api/quizzes');
+      if (!res.ok) throw new Error('Quizzes fetch failed');
+      const data = await res.json();
+      setQuizzes(data || []);
+    } catch (error) {
+      console.error('Quizzes load failed', error);
+    }
+  };
+
   const saveGoal = async (goal: any, id?: string) => {
     try {
       const endpoint = id ? `/api/goals/${id}` : '/api/goals';
@@ -201,6 +239,7 @@ export default function App() {
       const res = await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete quiz failed');
       await loadDashboard();
+      await loadQuizzes();
       return true;
     } catch (error) {
       console.error('Quiz delete failed', error);
@@ -432,11 +471,13 @@ export default function App() {
     loadCuadernos();
     loadGoals();
     loadDashboard();
+    loadQuizzes();
     const interval = setInterval(() => {
       loadNotes();
       loadCuadernos();
       loadGoals();
       loadDashboard();
+      loadQuizzes();
     }, 20000);
     return () => clearInterval(interval);
   }, []);
@@ -471,18 +512,19 @@ export default function App() {
   const isSettings = activeNav === "Settings";
   const isHub = activeNav === "Study Hub";
   const isNoteViewer = activeNav === "Note Viewer";
+  const isQuizDetail = activeNav === "Quiz Detail";
 
   // userInitials calculation removed
 
   const activeCuadernoForHeader = cuadernos.find((c) => c.id === selectedCuadernoId);
-  const rightPanelTitle = isStudy || isCreateNote ? "AI Study Assistant"
-    : isNotebooks ? "Notes Overview"
-      : isSettings ? "Account Info"
-        : "Weekly Progress";
+  const rightPanelTitle = isStudy || isCreateNote ? t("AI Study Assistant", language)
+    : isNotebooks ? t("Notes Overview", language)
+      : isSettings ? t("Account Info", language)
+        : t("Weekly Progress", language);
   const rightPanelSub = isStudy
-    ? (activeCuadernoForHeader ? `${activeCuadernoForHeader.titulo} — ${(activeCuadernoForHeader.noteIds || []).length} linked notes` : "Select a notebook to start")
-    : isCreateNote ? "Analyzing your note..."
-      : isNotebooks ? `${notes.length} total notes`
+    ? (activeCuadernoForHeader ? `${activeCuadernoForHeader.titulo} — ${(activeCuadernoForHeader.noteIds || []).length} ${t("linked notes", language)}` : t("Select a notebook to start", language))
+    : isCreateNote ? t("Analyzing your note...", language)
+      : isNotebooks ? `${notes.length} ${t("total notes", language)}`
         : isSettings ? (currentUser?.fullName ? `${currentUser.fullName} · UFRO` : "")
           : "Jun 16 – Jun 20, 2026";
 
@@ -503,6 +545,17 @@ export default function App() {
           await loadDashboard();
           setActiveNav("Study Hub");
         }}
+        darkMode={darkMode}
+      />
+    );
+  }
+
+  if (isQuizDetail && selectedQuizResult) {
+    return (
+      <TestDetailScreen
+        quiz={selectedQuizResult}
+        onBack={() => setActiveNav(quizDetailSource)}
+        onDelete={deleteQuiz}
         darkMode={darkMode}
       />
     );
@@ -559,7 +612,7 @@ export default function App() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="search"
-              placeholder="Search notes, subjects..."
+              placeholder={t("Search notes, subjects...", language)}
               onChange={(e) => handleSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm bg-muted rounded-lg border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
             />
@@ -607,7 +660,7 @@ export default function App() {
 
       {/* Body columns */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} currentUser={currentUser} onLogout={handleLogout} />
+        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} currentUser={currentUser} onLogout={handleLogout} language={language} />
         {isCreateNote ? (
           <CreateNoteMain
             onSave={async (note) => {
@@ -626,6 +679,12 @@ export default function App() {
               onLaunch={handleLaunchSession}
               notebookTitle={activeCuadernoForHeader?.titulo || "No Notebook Selected"}
               noteCount={activeCuadernoForHeader?.noteIds?.length || 0}
+              quizzes={quizzes}
+              onSelectQuiz={(quiz) => {
+                setSelectedQuizResult(quiz);
+                setQuizDetailSource("Study Hub");
+                setActiveNav("Quiz Detail");
+              }}
             />
           ) :
             isStudy ? (
@@ -643,14 +702,30 @@ export default function App() {
               isNotebooks ? <NotebooksMain filter={nbFilter} setFilter={setNbFilter} viewMode={viewMode} setViewMode={setViewMode} onImport={() => setShowImport(true)} onCreateNote={() => setActiveNav("Create Note")} onStudy={() => setActiveNav("Study Hub")} onOpenNote={(id) => openNoteViewer(id, "notes")} notes={notes} loading={notesLoading} onSave={saveNote} onDelete={deleteNote} handleSearch={handleSearch} /> :
                 isSettings ? (
                   <SettingsMain
-                    currentUser={currentUser}
-                    onUpdateUser={(updatedUser) => {
-                      setCurrentUser(updatedUser);
-                      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-                    }}
+                    darkMode={darkMode}
+                    setDarkMode={setDarkMode}
+                    hubMode={hubMode}
+                    setHubMode={setHubMode}
+                    hubDiff={hubDiff}
+                    setHubDiff={setHubDiff}
+                    hubQCount={hubQCount}
+                    setHubQCount={setHubQCount}
+                    hubTime={hubTime}
+                    setHubTime={setHubTime}
                   />
                 ) :
-                  <HomeMain dashboard={dashboard} currentUser={currentUser} currentTime={currentTime} notes={notes} />}
+                  <HomeMain
+                    dashboard={dashboard}
+                    currentUser={currentUser}
+                    currentTime={currentTime}
+                    notes={notes}
+                    language={language}
+                    onSelectQuiz={(quiz) => {
+                      setSelectedQuizResult(quiz);
+                      setQuizDetailSource("Home");
+                      setActiveNav("Quiz Detail");
+                    }}
+                  />}
         {isHub ? (
           <StudyHubPanel
             selectedMode={STUDY_MODES.find(m => m.id === hubMode)}

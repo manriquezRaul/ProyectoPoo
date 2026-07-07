@@ -3,6 +3,7 @@ import {
   Flame, Target, FileText, Calendar, TrendingUp, Award, BookOpen, Clock
 } from "lucide-react";
 import { DAILY_NOTES_DATA } from "../../constants";
+import { t } from "../../translations";
 
 // ─────────────────────────────────────────────
 // Sub-components
@@ -10,15 +11,16 @@ import { DAILY_NOTES_DATA } from "../../constants";
 
 export function StreakCard({ data }: { data: { days: number; best: number; activeDays: number } }) {
   const { days, best, activeDays } = data;
+  const lang = localStorage.getItem("settings_language") || "Español";
   return (
     <article aria-label="Study streak" className="col-span-1 bg-gradient-to-br from-primary to-blue-700 rounded-2xl p-5 text-white shadow-sm">
       <div className="flex items-start justify-between mb-4">
         <div className="p-2 bg-white/15 rounded-lg"><Flame className="w-5 h-5 text-white" /></div>
-        <span className="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">🔥 On fire</span>
+        <span className="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">🔥 {t("On fire", lang)}</span>
       </div>
       <p className="text-4xl font-extrabold leading-none">{days}</p>
-      <p className="text-sm font-semibold mt-1 text-white/90">Day Study Streak</p>
-      <p className="text-xs text-white/60 mt-3">Best: {best} days — keep going!</p>
+      <p className="text-sm font-semibold mt-1 text-white/90">{t("Day Study Streak", lang)}</p>
+      <p className="text-xs text-white/60 mt-3">{t("Best", lang)}: {best} {lang === "Español" ? "días — ¡sigue así!" : "days — keep going!"}</p>
       <div className="flex gap-1 mt-3">
         {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
           <div key={i} className={`flex-1 h-1.5 rounded-full ${i < activeDays ? "bg-white" : "bg-white/25"}`} />
@@ -30,6 +32,7 @@ export function StreakCard({ data }: { data: { days: number; best: number; activ
 
 export function AccuracyCard({ data }: { data: { value: number; trend: string; quizCount: number } }) {
   const { value, trend, quizCount } = data;
+  const lang = localStorage.getItem("settings_language") || "Español";
   return (
     <article aria-label="Accuracy rate" className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
@@ -39,28 +42,29 @@ export function AccuracyCard({ data }: { data: { value: number; trend: string; q
         </span>
       </div>
       <p className="text-3xl font-extrabold text-foreground">{value}%</p>
-      <p className="text-sm font-semibold text-muted-foreground mt-1">Accuracy Rate</p>
+      <p className="text-sm font-semibold text-muted-foreground mt-1">{t("Accuracy Rate", lang)}</p>
       <div className="mt-4 h-1.5 bg-muted rounded-full overflow-hidden">
         <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
       </div>
-      <p className="text-xs text-muted-foreground mt-2">Avg. across {quizCount} quizzes</p>
+      <p className="text-xs text-muted-foreground mt-2">{t("Avg. across", lang)} {quizCount} {t("quizzes", lang)}</p>
     </article>
   );
 }
 
 export function NotesCountCard({ data }: { data: { total: number; weeklyDelta: string } }) {
   const { total, weeklyDelta } = data;
+  const lang = localStorage.getItem("settings_language") || "Español";
   return (
     <article aria-label="Total notes" className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="p-2 bg-purple-100 rounded-lg"><FileText className="w-5 h-5 text-purple-600" /></div>
         <span className="flex items-center gap-1 text-xs font-semibold text-purple-600">
-          <Calendar className="w-3 h-3" /> This month
+          <Calendar className="w-3 h-3" /> {t("This month", lang)}
         </span>
       </div>
       <p className="text-3xl font-extrabold text-foreground">{total}</p>
-      <p className="text-sm font-semibold text-muted-foreground mt-1">Registered Notes</p>
-      <p className="text-xs text-muted-foreground mt-1">{weeklyDelta} notes from last week</p>
+      <p className="text-sm font-semibold text-muted-foreground mt-1">{t("Registered Notes", lang)}</p>
+      <p className="text-xs text-muted-foreground mt-1">{weeklyDelta} {t("notes from last week", lang)}</p>
     </article>
   );
 }
@@ -69,19 +73,20 @@ export function WeeklyActivityChart({ weeklyActivity }: { weeklyActivity: { day:
   const data = weeklyActivity && weeklyActivity.length ? weeklyActivity : DAILY_NOTES_DATA;
   const maxVal = Math.max(...data.map((d) => Math.max(d.notes, d.quizzes)));
   const chartH = 120;
+  const lang = localStorage.getItem("settings_language") || "Español";
   return (
     <section aria-label="Weekly activity" className="bg-card border border-border rounded-2xl p-5 shadow-sm">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-base font-bold text-foreground">Weekly Activity</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Notes created &amp; quizzes taken per day</p>
+          <h2 className="text-base font-bold text-foreground">{t("Weekly Activity", lang)}</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("Notes created & quizzes taken per day", lang)}</p>
         </div>
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
-            <span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block" /> Notes
+            <span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block" /> {t("Notes", lang)}
           </span>
           <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
-            <span className="w-2.5 h-2.5 rounded-sm bg-accent inline-block" /> Quizzes
+            <span className="w-2.5 h-2.5 rounded-sm bg-accent inline-block" /> {t("Quizzes", lang)}
           </span>
         </div>
       </div>
@@ -99,7 +104,7 @@ export function WeeklyActivityChart({ weeklyActivity }: { weeklyActivity: { day:
           {data.map((d) => (
             <div key={d.day} className="flex-1 flex items-end justify-center gap-0.5 group relative">
               <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card border border-border rounded-lg px-2 py-1 shadow-md text-[10px] text-foreground font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                {d.notes} notes · {d.quizzes} quizzes
+                {d.notes} {lang === "Español" ? "apuntes" : "notes"} · {d.quizzes} {lang === "Español" ? "cuestionarios" : "quizzes"}
               </div>
               <div className="w-full max-w-[14px] rounded-t-[3px] bg-primary" style={{ height: `${(d.notes / Math.max(maxVal, 1)) * chartH}px` }} />
               <div className="w-full max-w-[14px] rounded-t-[3px] bg-accent" style={{ height: `${(d.quizzes / Math.max(maxVal, 1)) * chartH}px` }} />
@@ -125,18 +130,21 @@ export interface HomeMainProps {
   currentUser: any;
   currentTime: Date;
   notes?: any[];
+  language?: string;
+  onSelectQuiz?: (quiz: any) => void;
 }
 
-export function HomeMain({ dashboard, currentUser, currentTime, notes = [] }: HomeMainProps) {
+export function HomeMain({ dashboard, currentUser, currentTime, notes = [], language, onSelectQuiz }: HomeMainProps) {
   const stats = dashboard || {};
   const recentQuizzes = stats.recentQuizzes || [];
+  const lang = language || localStorage.getItem("settings_language") || "Español";
 
   const firstName = currentUser?.fullName ? currentUser.fullName.split(' ')[0] : "";
   const dateOptions: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
   const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
   
-  const dateFormatted = currentTime.toLocaleDateString('es-ES', dateOptions);
-  const timeFormatted = currentTime.toLocaleTimeString('es-ES', timeOptions);
+  const dateFormatted = currentTime.toLocaleDateString(lang === "Español" ? 'es-ES' : 'en-US', dateOptions);
+  const timeFormatted = currentTime.toLocaleTimeString(lang === "Español" ? 'es-ES' : 'en-US', timeOptions);
   const dateCapitalized = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
 
   const getSubjectBadgeStyle = (subject: string) => {
@@ -153,18 +161,22 @@ export function HomeMain({ dashboard, currentUser, currentTime, notes = [] }: Ho
     try {
       const d = new Date(isoString);
       if (isNaN(d.getTime())) return isoString;
-      return d.toLocaleDateString("es-ES", { month: "short", day: "numeric", year: "numeric" });
+      return d.toLocaleDateString(lang === "Español" ? 'es-ES' : 'en-US', { month: "short", day: "numeric", year: "numeric" });
     } catch (e) {
       return isoString;
     }
   };
 
+  const sessionsStartedText = lang === "Español"
+    ? `Tienes ${stats.totalSessionsStarted || 0} sesiones iniciadas esta semana.`
+    : `You have ${stats.totalSessionsStarted || 0} sessions started this week.`;
+
   return (
     <main className="flex-1 min-w-0 overflow-y-auto px-8 py-7 space-y-8">
       <section aria-label="Welcome header">
         <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Dashboard</p>
-        <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Welcome back, {firstName} 👋</h1>
-        <p className="text-sm text-muted-foreground mt-1">{dateCapitalized} · {timeFormatted} — You have {stats.totalSessionsStarted || 0} sessions started this week.</p>
+        <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t("Welcome back", lang)}, {firstName} 👋</h1>
+        <p className="text-sm text-muted-foreground mt-1">{dateCapitalized} · {timeFormatted} — {sessionsStartedText}</p>
       </section>
       
       <section aria-label="Study statistics" className="grid grid-cols-3 gap-4">
@@ -180,9 +192,11 @@ export function HomeMain({ dashboard, currentUser, currentTime, notes = [] }: Ho
         <div className="bg-card border border-border rounded-2xl p-5 shadow-sm flex flex-col space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-border">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-primary" /> Apuntes Recientes
+              <BookOpen className="w-4 h-4 text-primary" /> {lang === "Español" ? "Apuntes Recientes" : "Recent Notes"}
             </h2>
-            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{notes.length} creados</span>
+            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {notes.length} {lang === "Español" ? "creados" : "created"}
+            </span>
           </div>
           
           <div className="flex-1 flex flex-col gap-3">
@@ -197,11 +211,11 @@ export function HomeMain({ dashboard, currentUser, currentTime, notes = [] }: Ho
                     </span>
                   </div>
                   <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
-                    {note.contenido || "Sin contenido."}
+                    {note.contenido || (lang === "Español" ? "Sin contenido." : "No content.")}
                   </p>
                   <div className="flex items-center gap-1 text-[9px] text-muted-foreground mt-1">
                     <Clock className="w-3 h-3 text-muted-foreground/60" />
-                    <span>Creado: {formatNoteDate(note.createdAt)}</span>
+                    <span>{lang === "Español" ? "Creado:" : "Created:"} {formatNoteDate(note.createdAt)}</span>
                   </div>
                 </article>
               );
@@ -209,7 +223,9 @@ export function HomeMain({ dashboard, currentUser, currentTime, notes = [] }: Ho
             {notes.length === 0 && (
               <div className="flex-1 flex flex-col items-center justify-center py-8">
                 <FileText className="w-8 h-8 text-muted-foreground/45 mb-2" />
-                <p className="text-xs text-muted-foreground italic text-center">No hay apuntes creados aún.</p>
+                <p className="text-xs text-muted-foreground italic text-center">
+                  {lang === "Español" ? "No hay apuntes creados aún." : "No notes created yet."}
+                </p>
               </div>
             )}
           </div>
@@ -219,16 +235,22 @@ export function HomeMain({ dashboard, currentUser, currentTime, notes = [] }: Ho
         <div className="bg-card border border-border rounded-2xl p-5 shadow-sm flex flex-col space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-border">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Award className="w-4 h-4 text-accent" /> Últimas Evaluaciones
+              <Award className="w-4 h-4 text-accent" /> {lang === "Español" ? "Últimas Evaluaciones" : "Recent Quizzes"}
             </h2>
-            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{recentQuizzes.length} realizadas</span>
+            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {recentQuizzes.length} {lang === "Español" ? "realizadas" : "completed"}
+            </span>
           </div>
           
           <div className="flex-1 flex flex-col gap-3">
             {recentQuizzes.slice(0, 3).map((quiz: any) => {
               const isGood = quiz.score >= 70;
               return (
-                <article key={quiz.id} className="p-3 border border-border bg-muted/20 hover:bg-muted/40 rounded-xl transition flex flex-col gap-2">
+                <button 
+                  key={quiz.id} 
+                  onClick={() => onSelectQuiz?.(quiz)}
+                  className="w-full text-left p-3 border border-border bg-muted/20 hover:bg-muted/40 rounded-xl transition flex flex-col gap-2 cursor-pointer shadow-sm"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-xs font-bold text-foreground leading-snug line-clamp-1">{quiz.subject}</h3>
                     <span className={`text-[10px] font-extrabold ${isGood ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
@@ -242,20 +264,22 @@ export function HomeMain({ dashboard, currentUser, currentTime, notes = [] }: Ho
                     <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
                       isGood ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50" : "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-200/50"
                     }`}>
-                      {quiz.badge || "Completado"}
+                      {t(quiz.badge || "Completado", lang)}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-[9px] text-muted-foreground mt-1">
                     <Clock className="w-3 h-3 text-muted-foreground/60" />
-                    <span>Realizado: {quiz.date}</span>
+                    <span>{lang === "Español" ? "Realizado:" : "Completed:"} {quiz.date}</span>
                   </div>
-                </article>
+                </button>
               );
             })}
             {recentQuizzes.length === 0 && (
               <div className="flex-1 flex flex-col items-center justify-center py-8">
                 <Target className="w-8 h-8 text-muted-foreground/45 mb-2" />
-                <p className="text-xs text-muted-foreground italic text-center">No hay cuestionarios realizados aún.</p>
+                <p className="text-xs text-muted-foreground italic text-center">
+                  {lang === "Español" ? "No hay cuestionarios realizados aún." : "No quizzes completed yet."}
+                </p>
               </div>
             )}
           </div>

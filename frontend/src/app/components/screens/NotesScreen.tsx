@@ -22,15 +22,15 @@ export interface NoteCardProps {
 export function NoteCard({ note, onOpen, onEdit, onDelete, onTogglePin }: NoteCardProps) {
   const subject = note.subject || "General";
   const badge = (SUBJECT_BADGE as any)[subject] || { bg: "#F3F4F6", text: "#111827" };
-  const title = note.title || note.titulo || "Untitled";
+  const title = note.title || note.titulo || "Sin Título";
   const preview = note.preview || note.contenido || "";
 
   const formattedDate = note.createdAt
-    ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-    : note.date || "Just now";
+    ? new Date(note.createdAt).toLocaleDateString("es-ES", { month: 'short', day: 'numeric', year: 'numeric' })
+    : note.date || "Hace un momento";
 
   const wordCount = (note.contenido || "").trim().split(/\s+/).filter(Boolean).length;
-  const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
+  const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min de lectura`;
 
   return (
     <article
@@ -48,7 +48,7 @@ export function NoteCard({ note, onOpen, onEdit, onDelete, onTogglePin }: NoteCa
             ? "text-primary opacity-100"
             : "text-muted-foreground opacity-0 group-hover:opacity-100"
         }`}
-        title={note.pinned ? "Unpin Note" : "Pin Note"}
+        title={note.pinned ? "Desanclar Apunte" : "Anclar Apunte"}
       >
         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={note.pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="12" y1="17" x2="12" y2="22"></line>
@@ -231,12 +231,12 @@ export function ImportModal({ onClose, onUploadSuccess }: ImportModalProps) {
     Array.from(fileList).forEach((file) => {
       const ext = file.name.split('.').pop()?.toLowerCase() || "";
       if (!allowedExtensions.includes(ext)) {
-        toast.error(`Format .${ext} is not supported. Please upload PDF, DOCX, TXT or MD.`);
+        toast.error(`El formato .${ext} no está soportado. Por favor sube archivos PDF, DOCX, TXT o MD.`);
         return;
       }
 
       if (file.size > 50 * 1024 * 1024) {
-        toast.error(`File ${file.name} exceeds the 50MB size limit.`);
+        toast.error(`El archivo ${file.name} supera el límite de tamaño de 50MB.`);
         return;
       }
 
@@ -278,14 +278,14 @@ export function ImportModal({ onClose, onUploadSuccess }: ImportModalProps) {
   const handleProcessWithAI = () => {
     const completedCount = files.filter(f => f.done).length;
     if (completedCount > 0) {
-      toast.success(`${completedCount} file(s) imported successfully!`);
+      toast.success(`¡${completedCount} archivo(s) importado(s) con éxito!`);
       onClose();
     } else if (files.length > 0 && files.every(f => f.error)) {
-      toast.error("No files were successfully imported.");
+      toast.error("No se importaron archivos con éxito.");
     } else if (files.length > 0) {
-      toast.info("Files are still importing. Please wait.");
+      toast.info("Los archivos aún se están importando. Por favor espera.");
     } else {
-      toast.info("Please select or drop files to import.");
+      toast.info("Por favor selecciona o arrastra archivos para importar.");
     }
   };
 
@@ -306,14 +306,14 @@ export function ImportModal({ onClose, onUploadSuccess }: ImportModalProps) {
               <CloudUpload className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Import Study Files</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">PDF, DOCX, TXT, MD — max 50 MB each</p>
+              <h2 className="text-sm font-bold text-foreground">Importar Archivos de Estudio</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">PDF, DOCX, TXT, MD — máx 50 MB cada uno</p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl hover:bg-muted transition text-muted-foreground hover:text-foreground"
-            aria-label="Close modal"
+            aria-label="Cerrar modal"
           >
             <X className="w-4 h-4" />
           </button>
@@ -345,11 +345,11 @@ export function ImportModal({ onClose, onUploadSuccess }: ImportModalProps) {
             </div>
             <div className="text-center">
               <p className="text-sm font-bold text-foreground">
-                {isDragging ? "Drop your files here" : "Drag & Drop your study files here"}
+                {isDragging ? "Suelta tus archivos aquí" : "Arrastra y suelta tus archivos de estudio aquí"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                or{" "}
-                <span className="text-primary font-semibold underline underline-offset-2">browse from your device</span>
+                o{" "}
+                <span className="text-primary font-semibold underline underline-offset-2">busca en tu dispositivo</span>
               </p>
             </div>
             <div className="flex items-center gap-2 mt-1">
@@ -365,7 +365,7 @@ export function ImportModal({ onClose, onUploadSuccess }: ImportModalProps) {
           {files.length > 0 && (
             <div className="space-y-2.5">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                Uploading ({files.length} files)
+                Subiendo ({files.length} archivos)
               </p>
               <ul className="space-y-2">
                 {files.map((f) => (
@@ -377,17 +377,17 @@ export function ImportModal({ onClose, onUploadSuccess }: ImportModalProps) {
                       <div className="flex items-center justify-between mb-1.5">
                         <p className="text-xs font-semibold text-foreground truncate max-w-[200px]">{f.name}</p>
                         <span className={`text-[10px] font-bold shrink-0 ml-2 ${f.error ? "text-red-400" : f.done ? "text-accent" : "text-muted-foreground"}`}>
-                          {f.error ? "Error ✗" : f.done ? "Done ✓" : `${f.progress}%`}
+                          {f.error ? "Error ✗" : f.done ? "Listo ✓" : `${f.progress}%`}
                         </span>
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${f.error ? "bg-red-400" : f.done ? "bg-accent" : "bg-primary"}`}
+                           className={`h-full rounded-full transition-all ${f.error ? "bg-red-400" : f.done ? "bg-accent" : "bg-primary"}`}
                           style={{ width: `${f.progress}%` }}
                         />
                       </div>
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        {f.size} · {f.error ? "Upload failed" : f.done ? "Upload complete" : `Uploading...`}
+                        {f.size} · {f.error ? "Error al subir" : f.done ? "Subida completa" : `Subiendo...`}
                       </p>
                     </div>
                     <button
@@ -407,21 +407,21 @@ export function ImportModal({ onClose, onUploadSuccess }: ImportModalProps) {
         {/* Footer actions */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/30">
           <p className="text-[10px] text-muted-foreground">
-            {files.filter((f) => f.done).length} of {files.length} files ready
+            {files.filter((f) => f.done).length} de {files.length} archivos listos
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               onClick={handleProcessWithAI}
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
             >
               <Sparkles className="w-4 h-4" />
-              Process with AI
+              Procesar con IA
             </button>
           </div>
         </div>
@@ -500,10 +500,10 @@ export function NotebooksMain({
       {/* Page header */}
       <section aria-label="Notebooks header" className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">My Notebooks</p>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Study Notes</h1>
+          <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Mis Apuntes</p>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Apuntes de Estudio</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {notes.length} notes across {SUBJECTS.length} subjects
+            {notes.length} apuntes en {SUBJECTS.length} materias
           </p>
         </div>
         <button
@@ -512,7 +512,7 @@ export function NotebooksMain({
           style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)", color: "#fff" }}
         >
           <Sparkles className="w-4 h-4" />
-          Study Now
+          Estudiar Ahora
         </button>
       </section>
 
@@ -522,7 +522,7 @@ export function NotebooksMain({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="search"
-            placeholder="Search notes by title or content..."
+            placeholder="Buscar apuntes por título o contenido..."
             onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 text-sm bg-card rounded-xl border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition shadow-sm"
           />
@@ -565,17 +565,17 @@ export function NotebooksMain({
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
         >
           <Plus className="w-4 h-4" />
-          Create New Blank Note
+          Crear Nuevo Apunte en Blanco
         </button>
         <button
           onClick={onImport}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border text-foreground text-sm font-semibold hover:bg-muted active:scale-[0.98] transition-all shadow-sm"
         >
           <Upload className="w-4 h-4 text-muted-foreground" />
-          Import File
+          Importar Archivo
         </button>
         <span className="ml-auto text-xs text-muted-foreground">
-          Showing <strong className="text-foreground">{filtered.length}</strong> notes
+          Mostrando <strong className="text-foreground">{filtered.length}</strong> apuntes
         </span>
       </div>
 
@@ -611,11 +611,11 @@ export function NotebooksMain({
                 onChange={(e) => setForm((f) => ({ ...f, pinned: e.target.checked }))}
                 className="w-4 h-4 text-primary rounded border-border focus:ring-primary/30 cursor-pointer"
               />
-              <span className="text-xs font-semibold text-foreground">Pin Note to Top</span>
+              <span className="text-xs font-semibold text-foreground">Anclar apunte al inicio</span>
             </label>
             <div className="flex items-center gap-2">
-              <button onClick={() => handleSave()} className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold">Save</button>
-              <button onClick={() => { setShowForm(false); setForm({ titulo: '', contenido: '', subject: 'OOP', pinned: false }); setEditingId(null); }} className="px-4 py-2 rounded-xl bg-card border text-xs font-semibold">Cancel</button>
+              <button onClick={() => handleSave()} className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold">Guardar</button>
+              <button onClick={() => { setShowForm(false); setForm({ titulo: '', contenido: '', subject: 'OOP', pinned: false }); setEditingId(null); }} className="px-4 py-2 rounded-xl bg-card border text-xs font-semibold">Cancelar</button>
             </div>
           </div>
         </div>
@@ -638,15 +638,15 @@ export function NotebooksMain({
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((note) => {
-            const title = note.title || note.titulo || 'Untitled';
+            const title = note.title || note.titulo || 'Sin Título';
             const preview = note.preview || note.contenido || '';
             const subject = note.subject || "General";
             const badge = (SUBJECT_BADGE as any)[subject] || { bg: "#F3F4F6", text: "#111827" };
             const formattedDate = note.createdAt
-              ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-              : note.date || "Just now";
+              ? new Date(note.createdAt).toLocaleDateString("es-ES", { month: 'short', day: 'numeric', year: 'numeric' })
+              : note.date || "Hace un momento";
             const wordCount = (note.contenido || "").trim().split(/\s+/).filter(Boolean).length;
-            const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
+            const calculatedReadTime = note.readTime || `${Math.max(1, Math.ceil(wordCount / 200))} min de lectura`;
             return (
               <article
                 key={note.id}
@@ -672,7 +672,7 @@ export function NotebooksMain({
                         onSave({ ...note, pinned: !note.pinned }, note.id);
                       }}
                       className={`p-1.5 rounded-lg hover:bg-muted transition ${note.pinned ? "text-primary animate-pulse" : "text-muted-foreground"}`}
-                      title={note.pinned ? "Unpin Note" : "Pin Note"}
+                      title={note.pinned ? "Desanclar Apunte" : "Anclar Apunte"}
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={note.pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="12" y1="17" x2="12" y2="22"></line>
@@ -719,11 +719,11 @@ export function NotebooksPanel({ notes = [], onOpenNote }: NotebooksPanelProps) 
   return (
     <aside aria-label="Notebooks panel" className="w-72 shrink-0 border-l border-border bg-card flex flex-col h-full overflow-y-auto">
       <section aria-label="Note stats" className="px-5 py-5 border-b border-border space-y-3">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Overview</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Resumen</h3>
         {[
-          { label: "Total Notes", value: totalNotes, color: "#2563EB", bg: "#EFF6FF" },
-          { label: "This Week", value: thisWeekNotes, color: "#10B981", bg: "#ECFDF5" },
-          { label: "Pinned", value: pinnedNotes.length, color: "#8B5CF6", bg: "#F5F3FF" },
+          { label: "Total de Apuntes", value: totalNotes, color: "#2563EB", bg: "#EFF6FF" },
+          { label: "Esta Semana", value: thisWeekNotes, color: "#10B981", bg: "#ECFDF5" },
+          { label: "Anclados", value: pinnedNotes.length, color: "#8B5CF6", bg: "#F5F3FF" },
         ].map((s) => (
           <div key={s.label} className="flex items-center justify-between p-3 rounded-xl" style={{ background: s.bg }}>
             <span className="text-xs font-semibold" style={{ color: s.color }}>{s.label}</span>
@@ -733,7 +733,7 @@ export function NotebooksPanel({ notes = [], onOpenNote }: NotebooksPanelProps) 
       </section>
 
       <section aria-label="Notes by subject" className="px-5 py-5 border-b border-border flex-1">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">By Subject</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Por Materia</h3>
         <ul className="space-y-2">
           {SUBJECTS.map((s) => {
             const count = displayNotes.filter((n) => {
@@ -760,7 +760,7 @@ export function NotebooksPanel({ notes = [], onOpenNote }: NotebooksPanelProps) 
       </section>
 
       <section aria-label="Pinned notes" className="px-5 py-5">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Pinned</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Anclados</h3>
         <ul className="space-y-2">
           {pinnedNotes.map((n) => {
             const subject = n.subject || "OOP";
@@ -775,10 +775,10 @@ export function NotebooksPanel({ notes = [], onOpenNote }: NotebooksPanelProps) 
                     {subject}
                   </span>
                   <p className="text-xs font-semibold text-foreground mt-1.5 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                    {n.title || n.titulo || "Untitled"}
+                    {n.title || n.titulo || "Sin Título"}
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-1">
-                    {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : n.date || "Just now"}
+                    {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : n.date || "Hace un momento"}
                   </p>
                 </button>
               </li>

@@ -146,13 +146,42 @@ export function StudySessionScreen({
         tipoEstudio === "truefalse" ? "True / False Blitz" :
         tipoEstudio === "flashcard" ? "Flashcard Memorize" : "Deep Development";
 
+      const questionsWithAnswers = sessionData.map((item, idx) => {
+        let userAnswer = "";
+        let isCorrect = false;
+        
+        if (tipoEstudio === "quiz") {
+          userAnswer = quizAnswers[idx] || "";
+          isCorrect = userAnswer === item.correct;
+        } else if (tipoEstudio === "truefalse") {
+          userAnswer = trueFalseAnswers[idx] !== undefined ? (trueFalseAnswers[idx] ? "Verdadero" : "Falso") : "";
+          isCorrect = trueFalseAnswers[idx] === item.correctAnswer;
+        } else if (tipoEstudio === "flashcard") {
+          userAnswer = flashcardRecall[idx] ? "Recordado" : "No recordado";
+          isCorrect = flashcardRecall[idx] === true;
+        } else if (tipoEstudio === "deep") {
+          userAnswer = deepAnswers[idx] ? `Evaluado (Nota: ${deepAnswers[idx].score})` : "";
+          isCorrect = (deepAnswers[idx]?.score || 0) >= 70;
+        }
+
+        return {
+          questionText: item.question || item.statement || "",
+          options: item.options || [],
+          correctAnswer: item.correct !== undefined ? String(item.correct) : item.correctAnswer !== undefined ? (item.correctAnswer ? "Verdadero" : "Falso") : item.answer || item.suggestedAnswer || "",
+          userAnswer: userAnswer,
+          isCorrect: isCorrect,
+          explanation: item.explanation || (deepAnswers[idx] ? `Retroalimentación: ${deepAnswers[idx].feedback}. Sugerencias: ${deepAnswers[idx].improvements}` : "") || ""
+        };
+      });
+
       const quizResult = {
         subject: `${notebookTitle} — ${modeLabel}`,
         score: finalScore,
         date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
         status: finalScore >= 70 ? "success" : "warning",
         badge: finalScore >= 90 ? "Excellent" : finalScore >= 80 ? "Great" : finalScore >= 70 ? "Good" : "Needs Work",
-        goalMet: finalScore >= 70
+        goalMet: finalScore >= 70,
+        questions: questionsWithAnswers
       };
 
       const res = await fetch('/api/dashboard/quiz', {

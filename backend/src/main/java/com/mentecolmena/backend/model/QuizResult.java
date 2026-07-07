@@ -82,4 +82,14 @@ public class QuizResult {
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
+
+    private java.util.List<java.util.Map<String, Object>> questions;
+
+    public java.util.List<java.util.Map<String, Object>> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(java.util.List<java.util.Map<String, Object>> questions) {
+        this.questions = questions;
+    }
 }

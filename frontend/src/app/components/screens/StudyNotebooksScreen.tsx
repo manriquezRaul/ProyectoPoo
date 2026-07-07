@@ -47,7 +47,7 @@ export function LinkNotesModal({
     const updatedNoteIds = Array.from(selected);
     const success = await onSaveCuaderno({ ...activeCuaderno, noteIds: updatedNoteIds }, activeCuaderno.id);
     if (success) {
-      toast.success("Notes linked successfully!");
+      toast.success("¡Apuntes vinculados exitosamente!");
     }
     onClose();
   };
@@ -59,7 +59,7 @@ export function LinkNotesModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog"
       aria-modal="true"
-      aria-label="Link notes to notebook"
+      aria-label="Vincular apuntes al cuaderno"
     >
       <div className="relative bg-card rounded-2xl shadow-2xl border border-border w-full max-w-lg mx-4 flex flex-col overflow-hidden" style={{ maxHeight: "85vh" }}>
         {/* Header */}
@@ -69,16 +69,16 @@ export function LinkNotesModal({
               <Link2 className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Link Notes to Notebook</h2>
+              <h2 className="text-sm font-bold text-foreground">Vincular Apuntes al Cuaderno</h2>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                {selected.size} note{selected.size !== 1 ? "s" : ""} selected
+                {selected.size} apunte{selected.size !== 1 ? "s" : ""} seleccionado{selected.size !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl hover:bg-muted transition text-muted-foreground hover:text-foreground"
-            aria-label="Close"
+            aria-label="Cerrar"
           >
             <X className="w-4 h-4" />
           </button>
@@ -90,7 +90,7 @@ export function LinkNotesModal({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="search"
-              placeholder="Search notes by title or tag..."
+              placeholder="Buscar apuntes por título o tag..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 text-sm bg-muted rounded-xl border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
@@ -103,7 +103,7 @@ export function LinkNotesModal({
         <ul className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
           {filtered.length === 0 && (
             <li className="py-10 text-center text-sm text-muted-foreground">
-              No notes match your search.
+              No se encontraron apuntes que coincidan con la búsqueda.
             </li>
           )}
           {filtered.map((note) => {
@@ -130,7 +130,7 @@ export function LinkNotesModal({
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className={`text-xs font-bold leading-snug transition-colors ${isSelected ? "text-primary" : "text-foreground"}`}>
-                        {note.title || note.titulo || "Untitled"}
+                        {note.title || note.titulo || "Sin Título"}
                       </p>
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
@@ -153,21 +153,21 @@ export function LinkNotesModal({
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/30 shrink-0">
           <p className="text-[10px] text-muted-foreground">
-            {filtered.length} note{filtered.length !== 1 ? "s" : ""} available
+            {filtered.length} apunte{filtered.length !== 1 ? "s" : ""} disponible{filtered.length !== 1 ? "s" : ""}
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               onClick={handleLink}
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <Link2 className="w-4 h-4" />
-              Save Link Selection
+              Guardar Vinculación
             </button>
           </div>
         </div>
@@ -277,12 +277,12 @@ export function StudyNotebooksMain({
     const handleCreateSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!cuadernoForm.titulo.trim()) {
-        toast.error("Please enter a title");
+        toast.error("Por favor ingresa un título");
         return;
       }
       const success = await onSaveCuaderno(cuadernoForm);
       if (success) {
-        toast.success("Study Notebook created successfully!");
+        toast.success("¡Cuaderno de estudio creado exitosamente!");
         setCuadernoForm({ titulo: "", descripcion: "", materia: "OOP" });
         setShowCreateForm(false);
       }
@@ -290,12 +290,12 @@ export function StudyNotebooksMain({
 
     return (
       <main className="flex-1 min-w-0 overflow-y-auto px-8 py-7 space-y-6">
-        <section aria-label="Notebooks header" className="flex items-start justify-between">
+        <section aria-label="Cuadernos de estudio cabecera" className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Study Notebooks</p>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">My Study Notebooks</h1>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Cuadernos de Estudio</p>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Mis Cuadernos de Estudio</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {cuadernos.length} notebooks registered in database
+              {cuadernos.length} cuadernos registrados en la base de datos
             </p>
           </div>
           <button
@@ -304,19 +304,19 @@ export function StudyNotebooksMain({
             style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)", color: "#fff" }}
           >
             <Plus className="w-4 h-4" />
-            Create Notebook
+            Crear Cuaderno
           </button>
         </section>
 
         {showCreateForm && (
           <form onSubmit={handleCreateSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-sm max-w-xl transition-all duration-150 animate-in fade-in slide-in-from-top-4">
-            <h3 className="text-sm font-bold text-foreground">New Study Notebook</h3>
+            <h3 className="text-sm font-bold text-foreground">Nuevo Cuaderno de Estudio</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Title</label>
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Título</label>
                 <input
                   type="text"
-                  placeholder="e.g. Programación Orientada a Objetos"
+                  placeholder="Ej: Programación Orientada a Objetos"
                   value={cuadernoForm.titulo}
                   onChange={(e) => setCuadernoForm((f) => ({ ...f, titulo: e.target.value }))}
                   className="w-full px-3.5 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -324,22 +324,22 @@ export function StudyNotebooksMain({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Subject / Materia</label>
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Materia</label>
                   <select
                     value={cuadernoForm.materia}
                     onChange={(e) => setCuadernoForm((f) => ({ ...f, materia: e.target.value }))}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                   >
                     {SUBJECT_FILTERS.filter((f) => f !== "All Subjects").map((f) => (
-                      <option key={f} value={f}>{f}</option>
+                      <option key={f} value={f}>{f === "OOP" ? "OOP" : f === "Databases" ? "Bases de Datos" : f === "Calculus" ? "Cálculo" : f === "Data Structures" ? "Estructuras de Datos" : f === "Linear Algebra" ? "Álgebra Lineal" : "Matemática Discreta"}</option>
                     ))}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Description</label>
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">Descripción</label>
                 <textarea
-                  placeholder="What is this study notebook about?"
+                  placeholder="¿De qué trata este cuaderno de estudio?"
                   value={cuadernoForm.descripcion}
                   onChange={(e) => setCuadernoForm((f) => ({ ...f, descripcion: e.target.value }))}
                   className="w-full px-3.5 py-2 rounded-xl border border-border bg-background text-foreground text-sm h-20 focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -347,8 +347,8 @@ export function StudyNotebooksMain({
               </div>
             </div>
             <div className="flex items-center gap-2 pt-2">
-              <button type="submit" className="px-5 py-2 rounded-xl bg-primary text-white text-xs font-semibold shadow hover:bg-primary/95 transition">Create</button>
-              <button type="button" onClick={() => { setShowCreateForm(false); setCuadernoForm({ titulo: "", descripcion: "", materia: "OOP" }); }} className="px-5 py-2 rounded-xl bg-card border text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition">Cancel</button>
+              <button type="submit" className="px-5 py-2 rounded-xl bg-primary text-white text-xs font-semibold shadow hover:bg-primary/95 transition">Crear</button>
+              <button type="button" onClick={() => { setShowCreateForm(false); setCuadernoForm({ titulo: "", descripcion: "", materia: "OOP" }); }} className="px-5 py-2 rounded-xl bg-card border text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition">Cancelar</button>
             </div>
           </form>
         )}
@@ -357,13 +357,13 @@ export function StudyNotebooksMain({
           {cuadernos.length === 0 ? (
             <div className="col-span-full py-16 text-center bg-card border border-dashed border-border rounded-2xl space-y-3">
               <BookOpen className="w-10 h-10 text-muted-foreground/60 mx-auto" />
-              <p className="text-sm font-semibold text-muted-foreground">No study notebooks registered in database</p>
-              <p className="text-xs text-muted-foreground/80">Create your first study notebook to get started!</p>
+              <p className="text-sm font-semibold text-muted-foreground">No hay cuadernos de estudio registrados en la base de datos</p>
+              <p className="text-xs text-muted-foreground/80">¡Crea tu primer cuaderno de estudio para comenzar!</p>
               <button
                 onClick={() => setShowCreateForm(true)}
                 className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition shadow-sm"
               >
-                Create First Notebook
+                Crear Primer Cuaderno
               </button>
             </div>
           ) : (
@@ -379,28 +379,28 @@ export function StudyNotebooksMain({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.text }}>
-                        {c.materia}
+                        {c.materia === "OOP" ? "OOP" : c.materia === "Databases" ? "Bases de Datos" : c.materia === "Calculus" ? "Cálculo" : c.materia === "Data Structures" ? "Estructuras de Datos" : c.materia === "Linear Algebra" ? "Álgebra Lineal" : "Matemática Discreta"}
                       </span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm("Are you sure you want to delete this study notebook?")) {
+                          if (confirm("¿Estás seguro de que quieres eliminar este cuaderno de estudio?")) {
                             onDeleteCuaderno(c.id);
                           }
                         }}
                         className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition opacity-0 group-hover:opacity-100"
-                        title="Delete Notebook"
+                        title="Eliminar Cuaderno"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     <h3 className="text-base font-extrabold text-foreground leading-snug group-hover:text-primary transition-colors">{c.titulo}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{c.descripcion || "No description provided."}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{c.descripcion || "Sin descripción."}</p>
                   </div>
                   <div className="flex items-center justify-between pt-4 border-t border-border mt-3 text-[10px] text-muted-foreground font-semibold">
                     <div className="flex items-center gap-1">
                       <BookOpen className="w-3 h-3 text-primary" />
-                      {noteCount} note{noteCount !== 1 ? "s" : ""} linked
+                      {noteCount} apunte{noteCount !== 1 ? "s" : ""} vinculado{noteCount !== 1 ? "s" : ""}
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground/75 group-hover:translate-x-0.5 transition-transform" />
                   </div>
@@ -425,7 +425,7 @@ export function StudyNotebooksMain({
   const handleUnlink = async (noteId: string) => {
     const updatedNoteIds = activeCuaderno.noteIds.filter((id: string) => id !== noteId);
     await onSaveCuaderno({ ...activeCuaderno, noteIds: updatedNoteIds }, activeCuaderno.id);
-    toast.info("Note unlinked from study notebook.");
+    toast.info("Apunte desvinculado del cuaderno de estudio.");
   };
 
   return (
@@ -437,13 +437,13 @@ export function StudyNotebooksMain({
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition font-medium"
         >
           <ChevronLeft className="w-4 h-4" />
-          Back to all notebooks
+          Volver a todos los cuadernos
         </button>
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-semibold text-primary uppercase tracking-widest">
-                Study Notebook
+                Cuaderno de Estudio
               </span>
               <span
                 className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
@@ -452,17 +452,17 @@ export function StudyNotebooksMain({
                   color: (SUBJECT_BADGE[activeCuaderno.materia as SubjectKey] || { bg: "#F3F4F6", text: "#111827" }).text,
                 }}
               >
-                {activeCuaderno.materia}
+                {activeCuaderno.materia === "OOP" ? "OOP" : activeCuaderno.materia === "Databases" ? "Bases de Datos" : activeCuaderno.materia === "Calculus" ? "Cálculo" : activeCuaderno.materia === "Data Structures" ? "Estructuras de Datos" : activeCuaderno.materia === "Linear Algebra" ? "Álgebra Lineal" : "Matemática Discreta"}
               </span>
             </div>
             <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
               {activeCuaderno.titulo}
             </h1>
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              {activeCuaderno.descripcion || "No description provided."}
+              {activeCuaderno.descripcion || "Sin descripción."}
             </p>
             <p className="text-xs text-muted-foreground mt-2 font-medium">
-              {linkedNotes.length} linked notes · Created on {new Date(activeCuaderno.createdAt).toLocaleDateString()}
+              {linkedNotes.length} apunte{linkedNotes.length !== 1 ? "s" : ""} vinculado{linkedNotes.length !== 1 ? "s" : ""} · Creado el {new Date(activeCuaderno.createdAt).toLocaleDateString("es-ES")}
             </p>
           </div>
           <button
@@ -471,7 +471,7 @@ export function StudyNotebooksMain({
             style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)", color: "#fff" }}
           >
             <Sparkles className="w-4 h-4" />
-            Study Now
+            Estudiar Ahora
           </button>
         </div>
       </section>
@@ -483,20 +483,20 @@ export function StudyNotebooksMain({
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted shadow-sm active:scale-[0.98] transition-all"
         >
           <Link2 className="w-4 h-4 text-primary" />
-          Link Existing Notes
+          Vincular Apuntes Existentes
         </button>
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="search"
-            placeholder="Search linked notes..."
+            placeholder="Buscar apuntes vinculados..."
             value={noteSearch}
             onChange={(e) => setNoteSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 text-sm bg-card rounded-xl border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition shadow-sm"
           />
         </div>
         <span className="ml-auto text-xs text-muted-foreground shrink-0 font-medium">
-          {filtered.length} of {linkedNotes.length} notes
+          {filtered.length} de {linkedNotes.length} apuntes
         </span>
       </section>
 
@@ -505,13 +505,13 @@ export function StudyNotebooksMain({
         {filtered.length === 0 ? (
           <div className="py-16 text-center bg-card border border-dashed border-border rounded-2xl space-y-3">
             <BookMarked className="w-10 h-10 text-muted-foreground/60 mx-auto" />
-            <p className="text-sm font-semibold text-muted-foreground">No notes linked to this study notebook yet</p>
-            <p className="text-xs text-muted-foreground/80">Link existing notes to start summarizing and generating smart quizzes!</p>
+            <p className="text-sm font-semibold text-muted-foreground">Aún no hay apuntes vinculados a este cuaderno de estudio</p>
+            <p className="text-xs text-muted-foreground/80">¡Vincula apuntes existentes para comenzar a resumir y generar cuestionarios!</p>
             <button
               onClick={() => setShowLinkModal(true)}
               className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition shadow-sm"
             >
-              Link Notes Now
+              Vincular Apuntes Ahora
             </button>
           </div>
         ) : (
