@@ -1,4 +1,9 @@
 #!/bin/sh
+if [ -d "C:\Users\manri\.jdks\openjdk-26.0.1" ]; then
+  JAVA_HOME="C:\Users\manri\.jdks\openjdk-26.0.1"
+elif [ -d "/c/Users/manri/.jdks/openjdk-26.0.1" ]; then
+  JAVA_HOME="/c/Users/manri/.jdks/openjdk-26.0.1"
+fi
 # ----------------------------------------------------------------------------
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file

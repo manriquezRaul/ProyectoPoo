@@ -1,4 +1,7 @@
 <# : batch portion
+@if exist "C:\Users\manri\.jdks\openjdk-26.0.1" (
+  @set "JAVA_HOME=C:\Users\manri\.jdks\openjdk-26.0.1"
+)
 @REM ----------------------------------------------------------------------------
 @REM Licensed to the Apache Software Foundation (ASF) under one
 @REM or more contributor license agreements.  See the NOTICE file
