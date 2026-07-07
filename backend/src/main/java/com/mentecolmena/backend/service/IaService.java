@@ -23,12 +23,49 @@ public class IaService {
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
 
-    @Value("${gemini.model:gemini-1.5-flash}")
+    @Value("${gemini.model:gemini-2.5-flash}")
     private String geminiModel;
 
     public IaService() {
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
+    }
+
+    private String loadApiKeyFromDotEnv() {
+        java.io.File[] files = {
+            new java.io.File(".env"),
+            new java.io.File("../.env"),
+            new java.io.File("backend/.env")
+        };
+        for (java.io.File envFile : files) {
+            if (envFile.exists()) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(envFile))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        if (line.startsWith("#") || line.isBlank()) {
+                            continue;
+                        }
+                        int eqIdx = line.indexOf('=');
+                        if (eqIdx > 0) {
+                            String key = line.substring(0, eqIdx).trim();
+                            String value = line.substring(eqIdx + 1).trim();
+                            if (value.startsWith("\"") && value.endsWith("\"")) {
+                                value = value.substring(1, value.length() - 1);
+                            } else if (value.startsWith("'") && value.endsWith("'")) {
+                                value = value.substring(1, value.length() - 1);
+                            }
+                            if ("GEMINI_API_KEY".equals(key)) {
+                                return value;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    // Ignore and try next
+                }
+            }
+        }
+        return null;
     }
 
     private String getApiKey() {
@@ -39,7 +76,11 @@ public class IaService {
         if (envKey != null && !envKey.isBlank()) {
             return envKey;
         }
-        throw new IllegalStateException("Gemini API Key is not configured. Please define gemini.api.key in application.properties or set the GEMINI_API_KEY environment variable.");
+        String dotEnvKey = loadApiKeyFromDotEnv();
+        if (dotEnvKey != null && !dotEnvKey.isBlank()) {
+            return dotEnvKey;
+        }
+        throw new IllegalStateException("Gemini API Key is not configured. Please define gemini.api.key in application.properties, set the GEMINI_API_KEY environment variable, or create a .env file with GEMINI_API_KEY.");
     }
 
     public String generarContenidoEstudio(String notesContent, String tipoEstudio) {
@@ -89,6 +130,10 @@ public class IaService {
     }
 
     private String llamarGemini(String prompt) {
+        return llamarGemini(prompt, true);
+    }
+
+    private String llamarGemini(String prompt, boolean forceJson) {
         String apiKey = getApiKey();
         String url = "https://generativelanguage.googleapis.com/v1beta/models/" + geminiModel + ":generateContent?key=" + apiKey;
 
@@ -96,11 +141,19 @@ public class IaService {
             // Prepare Request Payload
             Map<String, Object> parts = Map.of("text", prompt);
             Map<String, Object> content = Map.of("parts", List.of(parts));
-            Map<String, Object> generationConfig = Map.of("responseMimeType", "application/json");
-            Map<String, Object> requestBody = Map.of(
-                    "contents", List.of(content),
-                    "generationConfig", generationConfig
-            );
+            
+            Map<String, Object> requestBody;
+            if (forceJson) {
+                Map<String, Object> generationConfig = Map.of("responseMimeType", "application/json");
+                requestBody = Map.of(
+                        "contents", List.of(content),
+                        "generationConfig", generationConfig
+                );
+            } else {
+                requestBody = Map.of(
+                        "contents", List.of(content)
+                );
+            }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -119,5 +172,19 @@ public class IaService {
         } catch (Exception e) {
             throw new RuntimeException("Error communicating with Gemini API: " + e.getMessage(), e);
         }
+    }
+
+    public String chatearConNota(String chatMessage, String noteContent) {
+        getApiKey();
+        String prompt = "Eres MenteColmena AI, un asistente de estudio inteligente e interactivo. "
+                + "Responde a la consulta del estudiante de manera clara, concisa y amigable. "
+                + "Si la consulta tiene relación con el apunte provisto, utilízalo para responder de manera contextualizada.\n\n"
+                + "Contenido del apunte del estudiante:\n"
+                + "-----\n"
+                + (noteContent != null ? noteContent : "No hay contenido en este apunte.") + "\n"
+                + "-----\n\n"
+                + "Consulta del estudiante: " + chatMessage;
+
+        return llamarGemini(prompt, false);
     }
 }

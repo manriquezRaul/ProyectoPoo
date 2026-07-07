@@ -59,7 +59,7 @@ El sistema sigue una arquitectura moderna desacoplada en formato de Monorepo, se
 *   **Spring Data MongoDB**: Abstracción de persistencia que facilita el mapeo objeto-documento mediante repositorios de datos declarativos.
 
 ###  Inteligencia Artificial
-*   **Google Gemini API (`gemini-1.5-flash`)**: Integración directa con el modelo de lenguaje de Google para generar contenido académico estructurado en formato JSON nativo y evaluar de forma automatizada las respuestas del alumno.
+*   **Google Gemini API (`gemini-2.5-flash`)**: Integración directa con el modelo de lenguaje de Google para generar contenido académico estructurado en formato JSON nativo y evaluar de forma automatizada las respuestas del alumno.
 
 ---
 
@@ -175,7 +175,7 @@ El backend utiliza la API oficial de Google Gemini para toda la lógica de intel
 En el archivo `backend/src/main/resources/application.properties`, se define la propiedad que mapea la variable de entorno:
 ```properties
 gemini.api.key=${GEMINI_API_KEY:}
-gemini.model=gemini-1.5-flash
+gemini.model=gemini-2.5-flash
 ```
 
 Puedes definir esta variable en tu sistema operativo antes de levantar el backend:

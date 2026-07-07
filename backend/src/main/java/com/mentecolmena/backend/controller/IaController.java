@@ -129,4 +129,21 @@ public class IaController {
             return ResponseEntity.internalServerError().body("{\"error\": \"" + e.getMessage() + "\"}");
         }
     }
+
+    @PostMapping("/chat")
+    public ResponseEntity<Map<String, String>> chatearConNota(@RequestBody Map<String, String> payload) {
+        String message = payload.get("message");
+        String noteContent = payload.get("noteContent");
+
+        if (message == null || message.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El mensaje no puede estar vacío"));
+        }
+
+        try {
+            String aiResponse = iaService.chatearConNota(message, noteContent);
+            return ResponseEntity.ok(Map.of("response", aiResponse));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
 }
