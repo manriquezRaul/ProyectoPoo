@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import {
-  Hexagon, Clock, Bell, Search, Sun, Moon,
+  Hexagon, Clock, Search, Sun, Moon,
   X, Check, FolderArchive, FileText, Brain, Rocket,
 } from "lucide-react";
 
@@ -30,10 +30,7 @@ import {
 } from "./constants";
 
 export default function App() {
-  const [activeNav, setActiveNav] = useState(() => {
-    const savedUser = localStorage.getItem("currentUser");
-    return savedUser ? "Home" : "Login";
-  });
+  const [activeNav, setActiveNav] = useState("Home");
   const [nbFilter, setNbFilter] = useState("All Subjects");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showImport, setShowImport] = useState(false);
@@ -60,14 +57,10 @@ export default function App() {
   const [selectedNotebookIds, setSelectedNotebookIds] = useState<string[]>([]);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const [showScopeModal, setShowScopeModal] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<any>(() => {
-    const savedUser = localStorage.getItem("currentUser");
-    if (savedUser) {
-      try {
-        return JSON.parse(savedUser);
-      } catch (e) {}
-    }
-    return null;
+  const [currentUser, setCurrentUser] = useState<any>({
+    id: "1",
+    fullName: "Raúl Andrade",
+    email: "raul.andrade@ufro.cl",
   });
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -469,15 +462,9 @@ export default function App() {
     loadNote();
   }, [selectedNoteId]);
 
-  useEffect(() => {
-    const isAuthPage = activeNav === "Login" || activeNav === "Register";
-    if (!currentUser && !isAuthPage) {
-      setActiveNav("Login");
-    }
-  }, [currentUser, activeNav]);
-
-  const isLogin = activeNav === "Login";
-  const isRegister = activeNav === "Register";
+  // Removed authentication redirect effect
+  const isLogin = false;
+  const isRegister = false;
   const isNotebooks = activeNav === "My Notes";
   const isStudy = activeNav === "Study Notebooks";
   const isCreateNote = activeNav === "Create Note";
@@ -485,13 +472,7 @@ export default function App() {
   const isHub = activeNav === "Study Hub";
   const isNoteViewer = activeNav === "Note Viewer";
 
-  const userInitials = currentUser?.fullName
-    ? (() => {
-        const parts = currentUser.fullName.trim().split(/\s+/);
-        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-      })()
-    : "US";
+  // userInitials calculation removed
 
   const activeCuadernoForHeader = cuadernos.find((c) => c.id === selectedCuadernoId);
   const rightPanelTitle = isStudy || isCreateNote ? "AI Study Assistant"
@@ -505,236 +486,7 @@ export default function App() {
         : isSettings ? (currentUser?.fullName ? `${currentUser.fullName} · UFRO` : "")
           : "Jun 16 – Jun 20, 2026";
 
-  // ── Login ── full-page override
-  if (isLogin) return (
-    <div
-      className={`min-h-screen w-full flex items-center justify-center px-4 bg-slate-900${darkMode ? " dark" : ""}`}
-      style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}
-    >
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg mb-4">
-            <Hexagon className="w-6 h-6 text-white fill-white/20 stroke-white" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">MenteColmena</h1>
-          <p className="text-sm text-slate-400 mt-1">Welcome back — sign in to continue</p>
-        </div>
-
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-2xl">
-          <h2 className="text-lg font-bold text-white mb-6">Sign in to your account</h2>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">University Email</label>
-              <input
-                type="email"
-                required
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                placeholder="you@university.cl"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Password</label>
-                <button type="button" onClick={() => { }} className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition">
-                  Forgot password?
-                </button>
-              </div>
-              <input
-                type="password"
-                required
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full mt-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white text-sm font-bold shadow-lg shadow-blue-900/40 transition-all duration-150"
-            >
-              Sign In
-            </button>
-          </form>
-
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-slate-700" />
-            <span className="text-[11px] text-slate-500 font-medium">or</span>
-            <div className="flex-1 h-px bg-slate-700" />
-          </div>
-
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await fetch('/api/usuarios/registrar', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    fullName: "Raúl Andrade",
-                    email: "raul.andrade@ufro.cl",
-                    password: "google_oauth_mock_password",
-                  }),
-                });
-              } catch (e) {}
-              
-              try {
-                const res = await fetch('/api/usuarios/login', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    email: "raul.andrade@ufro.cl",
-                    password: "google_oauth_mock_password",
-                  }),
-                });
-                if (res.ok) {
-                  const data = await res.json();
-                  setCurrentUser(data);
-                  localStorage.setItem("currentUser", JSON.stringify(data));
-                  setActiveNav("Home");
-                  toast.success("¡Iniciaste sesión con Google!");
-                }
-              } catch (error) {
-                toast.error("Error al autenticar con Google.");
-              }
-            }}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-            </svg>
-            Continue with Google
-          </button>
-
-          <p className="text-center text-[12px] text-slate-400 mt-6">
-            Don&apos;t have an account?{" "}
-            <button
-              type="button"
-              onClick={() => setActiveNav("Register")}
-              className="text-blue-400 font-semibold hover:text-blue-300 hover:underline underline-offset-2 transition"
-            >
-              Register
-            </button>
-          </p>
-        </div>
-        <p className="text-center text-[11px] text-slate-600 mt-6">© 2026 MenteColmena · All rights reserved</p>
-      </div>
-    </div>
-  );
-
-  // ── Register ── full-page override
-  if (isRegister) return (
-    <div
-      className={`min-h-screen w-full flex items-center justify-center px-4 py-10 bg-slate-900${darkMode ? " dark" : ""}`}
-      style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}
-    >
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg mb-4">
-            <Hexagon className="w-6 h-6 text-white fill-white/20 stroke-white" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">MenteColmena</h1>
-          <p className="text-sm text-slate-400 mt-1">Create your account and start studying smarter</p>
-        </div>
-
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-2xl">
-          <h2 className="text-lg font-bold text-white mb-6">Create a new account</h2>
-
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Full Name</label>
-              <input
-                type="text"
-                required
-                value={regName}
-                onChange={(e) => setRegName(e.target.value)}
-                placeholder="Raúl Andrade"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">University Email</label>
-              <input
-                type="email"
-                required
-                value={regEmail}
-                onChange={(e) => setRegEmail(e.target.value)}
-                placeholder="you@university.cl"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-              />
-              <p className="text-[10px] text-slate-500">Use your institutional email address.</p>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Password</label>
-              <input
-                type="password"
-                required
-                value={regPassword}
-                onChange={(e) => setRegPassword(e.target.value)}
-                placeholder="Min. 8 characters"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Confirm Password</label>
-              <input
-                type="password"
-                required
-                value={regConfirm}
-                onChange={(e) => setRegConfirm(e.target.value)}
-                placeholder="Repeat your password"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-              />
-            </div>
-
-            <label className="flex items-start gap-3 cursor-pointer pt-1">
-              <input type="checkbox" required className="mt-0.5 w-4 h-4 rounded border-slate-600 bg-slate-900 accent-blue-500 cursor-pointer shrink-0" />
-              <span className="text-[11px] text-slate-400 leading-relaxed">
-                I agree to the{" "}
-                <button type="button" onClick={() => { }} className="text-blue-400 font-semibold hover:underline underline-offset-2">Terms of Service</button>
-                {" "}and{" "}
-                <button type="button" onClick={() => { }} className="text-blue-400 font-semibold hover:underline underline-offset-2">Privacy Policy</button>
-              </span>
-            </label>
-
-            <button
-              type="submit"
-              className="w-full mt-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white text-sm font-bold shadow-lg shadow-blue-900/40 transition-all duration-150"
-            >
-              Create Account
-            </button>
-          </form>
-
-          <div className="mt-5 space-y-1.5">
-            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Password strength</p>
-            <div className="flex gap-1">
-              {["bg-red-500", "bg-amber-500", "bg-blue-500", "bg-slate-700"].map((c, i) => (
-                <div key={i} className={`flex-1 h-1 rounded-full ${c}`} />
-              ))}
-            </div>
-            <p className="text-[10px] text-amber-400">Moderate — add symbols to strengthen</p>
-          </div>
-
-          <p className="text-center text-[12px] text-slate-400 mt-6">
-            Already have an account?{" "}
-            <button
-              type="button"
-              onClick={() => setActiveNav("Login")}
-              className="text-blue-400 font-semibold hover:text-blue-300 hover:underline underline-offset-2 transition"
-            >
-              Log In
-            </button>
-          </p>
-        </div>
-        <p className="text-center text-[11px] text-slate-600 mt-6">© 2026 MenteColmena · All rights reserved</p>
-      </div>
-    </div>
-  );
+  // Login and Register screens removed.
 
   const isStudySession = activeNav === "Study Session";
   if (isStudySession && studySessionData) {
@@ -840,21 +592,17 @@ export default function App() {
                 <Moon className="w-3.5 h-3.5 text-primary" />
               </span>
             </button>
-            <button aria-label="Notifications" onClick={() => {}} className="relative p-2 rounded-lg hover:bg-muted transition">
-              <Bell className="w-[18px] h-[18px] text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent" />
-            </button>
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-xs font-bold text-white">{userInitials}</span>
-            </div>
+            {/* Notification and profile initials removed */}
           </div>
         </div>
 
         {/* Right panel title */}
-        <div className="w-72 shrink-0 px-5 flex flex-col justify-center border-l border-border">
-          <h2 className="text-sm font-bold text-foreground">{rightPanelTitle}</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">{rightPanelSub}</p>
-        </div>
+        {!(isSettings || activeNav === "Home") && (
+          <div className="w-72 shrink-0 px-5 flex flex-col justify-center border-l border-border">
+            <h2 className="text-sm font-bold text-foreground">{rightPanelTitle}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{rightPanelSub}</p>
+          </div>
+        )}
       </div>
 
       {/* Body columns */}
@@ -902,7 +650,7 @@ export default function App() {
                     }}
                   />
                 ) :
-                  <HomeMain dashboard={dashboard} currentUser={currentUser} currentTime={currentTime} />}
+                  <HomeMain dashboard={dashboard} currentUser={currentUser} currentTime={currentTime} notes={notes} />}
         {isHub ? (
           <StudyHubPanel
             selectedMode={STUDY_MODES.find(m => m.id === hubMode)}
@@ -928,7 +676,7 @@ export default function App() {
             />
           ) :
             isNotebooks ? <NotebooksPanel notes={notes} onOpenNote={(id) => openNoteViewer(id, "notes")} /> :
-              isSettings ? null :
+              (isSettings || activeNav === "Home") ? null :
                 <HomePanel
                   dashboard={dashboard}
                   goals={goals}
