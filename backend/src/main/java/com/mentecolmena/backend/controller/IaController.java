@@ -31,7 +31,9 @@ public class IaController {
     }
 
     @PostMapping("/generar")
-    public ResponseEntity<String> generarContenidoEstudio(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<String> generarContenidoEstudio(
+            @RequestBody Map<String, Object> payload,
+            @RequestHeader(value = "X-Gemini-API-Key", required = false) String clientApiKey) {
         String notebookId = (String) payload.get("notebookId");
         String tipoEstudio = (String) payload.get("tipoEstudio");
         String dificultad = (String) payload.get("dificultad");
@@ -101,7 +103,7 @@ public class IaController {
         notesTextBuilder.append("- Cantidad de elementos requeridos: ").append(cantidadPreguntas).append(". Genera exactamente esta cantidad de elementos.");
 
         try {
-            String jsonResult = iaService.generarContenidoEstudio(notesTextBuilder.toString(), tipoEstudio);
+            String jsonResult = iaService.generarContenidoEstudio(notesTextBuilder.toString(), tipoEstudio, clientApiKey);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(jsonResult);
@@ -111,7 +113,9 @@ public class IaController {
     }
 
     @PostMapping("/evaluar")
-    public ResponseEntity<String> evaluarRespuesta(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<String> evaluarRespuesta(
+            @RequestBody Map<String, String> payload,
+            @RequestHeader(value = "X-Gemini-API-Key", required = false) String clientApiKey) {
         String question = payload.get("question");
         String studentAnswer = payload.get("studentAnswer");
         String rubric = payload.get("rubric");
@@ -121,7 +125,7 @@ public class IaController {
         }
 
         try {
-            String evaluationJson = iaService.evaluarRespuestaAbierta(question, studentAnswer, rubric != null ? rubric : "");
+            String evaluationJson = iaService.evaluarRespuestaAbierta(question, studentAnswer, rubric != null ? rubric : "", clientApiKey);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(evaluationJson);
@@ -131,7 +135,9 @@ public class IaController {
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, String>> chatearConNota(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<Map<String, String>> chatearConNota(
+            @RequestBody Map<String, String> payload,
+            @RequestHeader(value = "X-Gemini-API-Key", required = false) String clientApiKey) {
         String message = payload.get("message");
         String noteContent = payload.get("noteContent");
 
@@ -140,7 +146,7 @@ public class IaController {
         }
 
         try {
-            String aiResponse = iaService.chatearConNota(message, noteContent);
+            String aiResponse = iaService.chatearConNota(message, noteContent, clientApiKey);
             return ResponseEntity.ok(Map.of("response", aiResponse));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));

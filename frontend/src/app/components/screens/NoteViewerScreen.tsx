@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import {
   SUBJECT_FILTERS, SUBJECT_BADGE, SubjectKey,
-  LINKED_NOTES, VIEWER_NOTE_LIST, VIEWER_SUMMARY, VIEWER_QUIZ
+  LINKED_NOTES, VIEWER_NOTE_LIST, VIEWER_QUIZ
 } from "../../constants";
 
 export interface NoteViewerScreenProps {
@@ -85,9 +85,13 @@ export function NoteViewerScreen({
     setLoadingQuiz(true);
     setQuizAnswered(null);
     try {
+      const apiKey = localStorage.getItem("gemini_api_key") || "";
       const res = await fetch("/api/ia/generar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Gemini-API-Key": apiKey
+        },
         body: JSON.stringify({
           noteIds: note && note.id ? [note.id] : [],
           tipoEstudio: "quiz",
@@ -138,9 +142,13 @@ export function NoteViewerScreen({
     setSendingMsg(true);
 
     try {
+      const apiKey = localStorage.getItem("gemini_api_key") || "";
       const res = await fetch("/api/ia/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Gemini-API-Key": apiKey
+        },
         body: JSON.stringify({
           message: msgText,
           noteContent: note ? (note.contenido || note.preview || "") : ""

@@ -81,9 +81,13 @@ export function StudySessionScreen({
     }
     setEvaluating(true);
     try {
+      const apiKey = localStorage.getItem("gemini_api_key") || "";
       const res = await fetch('/api/ia/evaluar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Gemini-API-Key': apiKey
+        },
         body: JSON.stringify({
           question: currentItem.question,
           studentAnswer: userAnswerText,

@@ -1,7 +1,5 @@
 import {
   Home, BookOpen, Settings, StickyNote,
-  Flame, Target, FileText, ChevronRight, Clock,
-  TrendingUp, Calendar, 
   ClipboardList, PenLine, Layers, Zap,
 } from "lucide-react";
 
@@ -16,16 +14,6 @@ export const NAV_ITEMS = [
   { icon: Settings, label: "Settings" },
 ];
 
-// ─────────────────────────────────────────────
-// Home Data
-// ─────────────────────────────────────────────
-
-export const STATS = {
-  streak: { days: 5, best: 12, activeDays: 5 },
-  accuracy: { value: 84, trend: "+4.2%", quizCount: 24 },
-  notes: { total: 24, weeklyDelta: "+6" },
-};
-
 export const SUBJECTS = [
   { id: 1, name: "Object-Oriented\nProgramming", notes: 8, icon: "⬡", progress: 72, bg: "#EFF6FF", border: "#BFDBFE" },
   { id: 2, name: "Databases", notes: 5, icon: "🗄", progress: 58, bg: "#ECFDF5", border: "#A7F3D0" },
@@ -34,22 +22,6 @@ export const SUBJECTS = [
   { id: 5, name: "Linear Algebra", notes: 2, icon: "Σ", progress: 30, bg: "#FFF1F2", border: "#FECDD3" },
   { id: 6, name: "Discrete Math", notes: 1, icon: "∩", progress: 20, bg: "#F0FDF4", border: "#BBF7D0" },
 ];
-
-export const WEEKLY_GOALS = [
-  { label: "Study Sessions", done: 5, goal: 7, color: "#2563EB" },
-  { label: "Quizzes Taken", done: 4, goal: 5, color: "#10B981" },
-  { label: "Notes Reviewed", done: 12, goal: 15, color: "#8B5CF6" },
-];
-
-export const QUIZ_RESULTS = [
-  { id: 1, subject: "OOP — Inheritance & Polymorphism", score: 94, date: "Today, 2:30 PM", status: "success", badge: "Excellent" },
-  { id: 2, subject: "Databases — SQL Joins", score: 87, date: "Yesterday, 6:15 PM", status: "success", badge: "Great" },
-  { id: 3, subject: "Calculus — Derivatives", score: 71, date: "Jun 18, 4:00 PM", status: "warning", badge: "Good" },
-  { id: 4, subject: "OOP — Design Patterns", score: 91, date: "Jun 17, 11:20 AM", status: "success", badge: "Excellent" },
-  { id: 5, subject: "Data Structures — Trees", score: 63, date: "Jun 16, 3:45 PM", status: "warning", badge: "Needs Work" },
-];
-
-export const WEEKLY_COMPLETION = 71;
 
 export const DAILY_NOTES_DATA = [
   { day: "Mon", notes: 3, quizzes: 1 },
@@ -79,87 +51,6 @@ export const SUBJECT_BADGE: Record<SubjectKey, { bg: string; text: string }> = {
   "Linear Algebra": { bg: "#FFF1F2", text: "#9F1239" },
   "Discrete Math": { bg: "#F0FDF4", text: "#14532D" },
 };
-
-export const NOTEBOOKS = [
-  {
-    id: 1,
-    title: "Inheritance & Polymorphism in Java",
-    preview: "Polymorphism allows objects of different classes to be treated as objects of a common superclass. The most common use is when a parent class reference is used to refer to a child class object...",
-    subject: "OOP" as SubjectKey,
-    date: "Jun 20, 2026",
-    readTime: "5 min read",
-    pinned: true,
-  },
-  {
-    id: 2,
-    title: "SQL JOIN Types — INNER, LEFT, RIGHT, FULL",
-    preview: "A JOIN clause is used to combine rows from two or more tables, based on a related column. INNER JOIN returns records that have matching values in both tables...",
-    subject: "Databases" as SubjectKey,
-    date: "Jun 19, 2026",
-    readTime: "8 min read",
-    pinned: false,
-  },
-  {
-    id: 3,
-    title: "Design Patterns — Singleton & Factory",
-    preview: "The Singleton pattern ensures a class has only one instance and provides a global point of access to it. Use a private constructor and a static method that returns the single instance...",
-    subject: "OOP" as SubjectKey,
-    date: "Jun 18, 2026",
-    readTime: "6 min read",
-    pinned: true,
-  },
-  {
-    id: 4,
-    title: "Derivatives — Chain Rule & Product Rule",
-    preview: "The chain rule is a formula for computing the derivative of a composition of two or more functions. If h(x) = f(g(x)), then h'(x) = f'(g(x)) · g'(x)...",
-    subject: "Calculus" as SubjectKey,
-    date: "Jun 17, 2026",
-    readTime: "4 min read",
-    pinned: false,
-  },
-  {
-    id: 5,
-    title: "Binary Search Trees — Insertion & Traversal",
-    preview: "A BST is a node-based binary tree data structure where each node has at most two child nodes. The left subtree contains nodes with keys less than the parent node's key...",
-    subject: "Data Structures" as SubjectKey,
-    date: "Jun 16, 2026",
-    readTime: "7 min read",
-    pinned: false,
-  },
-  {
-    id: 6,
-    title: "Normalization — 1NF, 2NF, 3NF",
-    preview: "Database normalization is the process of structuring a relational database to reduce data redundancy and improve data integrity. First Normal Form requires atomic values in each column...",
-    subject: "Databases" as SubjectKey,
-    date: "Jun 15, 2026",
-    readTime: "9 min read",
-    pinned: false,
-  },
-  {
-    id: 7,
-    title: "Matrix Operations & Determinants",
-    preview: "A matrix is a rectangular array of numbers arranged in rows and columns. Matrix multiplication is only defined when the number of columns in the first matrix equals the number of rows in the second...",
-    subject: "Linear Algebra" as SubjectKey,
-    date: "Jun 14, 2026",
-    readTime: "6 min read",
-    pinned: false,
-  },
-  {
-    id: 8,
-    title: "Graph Theory — BFS & DFS Algorithms",
-    preview: "Breadth-first search explores the neighbor nodes first, before moving to the next level. It uses a queue data structure. DFS explores as far as possible along each branch before backtracking...",
-    subject: "Discrete Math" as SubjectKey,
-    date: "Jun 13, 2026",
-    readTime: "5 min read",
-    pinned: false,
-  },
-];
-
-export const NOTEBOOKS_STATS = [
-  { label: "Total Notes", value: "24", color: "#2563EB", bg: "#EFF6FF" },
-  { label: "This Week", value: "6", color: "#10B981", bg: "#ECFDF5" },
-  { label: "Pinned", value: "2", color: "#8B5CF6", bg: "#F5F3FF" },
-];
 
 // ─────────────────────────────────────────────
 // Study Notebooks Data
@@ -213,48 +104,6 @@ export const LINKED_NOTES = [
     tags: ["OOP", "Java"],
     date: "Jun 13, 2026",
     readTime: "5 min",
-  },
-];
-
-export const AI_SUMMARY_POINTS = [
-  { id: 1, text: "OOP is built on four pillars: Encapsulation, Abstraction, Inheritance, and Polymorphism — each addressing a different dimension of code organization." },
-  { id: 2, text: "Inheritance enables code reuse by allowing a child class to acquire properties and behaviors of a parent class, forming an IS-A relationship." },
-  { id: 3, text: "Polymorphism (runtime & compile-time) allows one interface to be used for a general class of actions, resolved at runtime via dynamic dispatch." },
-  { id: 4, text: "SOLID principles ensure that class designs remain maintainable and scalable, reducing the cost of changes in large codebases." },
-  { id: 5, text: "Design patterns (Singleton, Factory, Observer) are reusable solutions to commonly occurring problems in software design." },
-  { id: 6, text: "UML class diagrams model relationships (association, aggregation, composition, dependency) between classes using standardized notation." },
-];
-
-export const QUIZ_QUESTIONS = [
-  {
-    id: 1,
-    question: "Which OOP principle states that a class should have only one reason to change?",
-    options: [
-      { label: "A", text: "Open/Closed Principle" },
-      { label: "B", text: "Single Responsibility Principle" },
-      { label: "C", text: "Liskov Substitution Principle" },
-    ],
-    correct: "B",
-  },
-  {
-    id: 2,
-    question: "What type of polymorphism is achieved through method overriding in Java?",
-    options: [
-      { label: "A", text: "Compile-time polymorphism" },
-      { label: "B", text: "Parametric polymorphism" },
-      { label: "C", text: "Runtime polymorphism" },
-    ],
-    correct: "C",
-  },
-  {
-    id: 3,
-    question: "Which design pattern ensures a class has only one instance globally?",
-    options: [
-      { label: "A", text: "Singleton Pattern" },
-      { label: "B", text: "Factory Pattern" },
-      { label: "C", text: "Observer Pattern" },
-    ],
-    correct: "A",
   },
 ];
 
@@ -328,43 +177,6 @@ export const VIEWER_NOTE_LIST = [
   { id: 4, title: "Lesson 4: Polymorphism and Interfaces", snippet: "Polymorphism enables one interface to be used...", active: true },
   { id: 5, title: "Lesson 5: Abstract Classes", snippet: "Abstract classes cannot be instantiated and may...", active: false },
   { id: 6, title: "Lesson 6: Design Patterns", snippet: "Design patterns are reusable solutions to common...", active: false },
-];
-
-export const CHAT_MESSAGES = [
-  {
-    id: 1,
-    role: "user" as const,
-    text: "What is the difference between method overloading and method overriding?",
-    time: "2:31 PM",
-  },
-  {
-    id: 2,
-    role: "ai" as const,
-    text: "Great question! Here's the key distinction:\n\n**Method Overloading** (compile-time polymorphism) occurs when multiple methods share the same name but differ in parameters — number, type, or order. The compiler resolves which version to call.\n\n**Method Overriding** (runtime polymorphism) occurs when a subclass provides its own implementation of a method already defined in its superclass. The JVM resolves it at runtime via dynamic dispatch.",
-    source: "Paragraph 2 — Polymorphism Types",
-    time: "2:31 PM",
-  },
-  {
-    id: 3,
-    role: "user" as const,
-    text: "Can you give me a Java example of overriding?",
-    time: "2:33 PM",
-  },
-  {
-    id: 4,
-    role: "ai" as const,
-    text: "Of course! Here's a minimal example:\n\n```java\nclass Animal {\n  void speak() { System.out.println(\"...\"); }\n}\nclass Dog extends Animal {\n  @Override\n  void speak() { System.out.println(\"Woof!\"); }\n}\n```\n\nWhen you call `speak()` on a `Dog` reference stored as `Animal`, Java uses the `Dog` version at runtime.",
-    source: "Lesson 3 — Inheritance",
-    time: "2:33 PM",
-  },
-];
-
-export const VIEWER_SUMMARY = [
-  "Polymorphism is one of the four pillars of OOP, allowing objects of different types to be accessed through the same interface.",
-  "Runtime polymorphism is achieved via method overriding — the JVM resolves the correct method at execution time using dynamic dispatch.",
-  "Compile-time polymorphism is achieved via method overloading — resolved by the compiler based on method signatures.",
-  "Interfaces define a pure contract with no implementation. A class may implement multiple interfaces, bypassing Java's single-inheritance limit.",
-  "The `@Override` annotation is best practice when overriding methods — it lets the compiler catch errors if the signature doesn't match.",
 ];
 
 export const VIEWER_QUIZ = [

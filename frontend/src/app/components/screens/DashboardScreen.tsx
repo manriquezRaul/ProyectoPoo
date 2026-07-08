@@ -295,14 +295,11 @@ export function HomeMain({ dashboard, currentUser, currentTime, notes = [], lang
 
 export interface HomePanelProps {
   dashboard: any;
-  goals: any[];
-  onSaveGoal: (goal: any, id?: string) => Promise<boolean>;
-  onDeleteGoal: (id: string) => Promise<boolean>;
   onDeleteQuiz: (id: string) => Promise<boolean>;
   onSaveQuiz: (quiz: any) => Promise<boolean>;
   notes?: any[];
 }
 
-export function HomePanel({}: HomePanelProps) {
+export function HomePanel(_props: HomePanelProps) {
   return null;
 }

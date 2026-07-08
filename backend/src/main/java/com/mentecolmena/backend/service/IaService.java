@@ -68,7 +68,10 @@ public class IaService {
         return null;
     }
 
-    private String getApiKey() {
+    private String getApiKey(String clientApiKey) {
+        if (clientApiKey != null && !clientApiKey.isBlank()) {
+            return clientApiKey;
+        }
         if (geminiApiKey != null && !geminiApiKey.isBlank()) {
             return geminiApiKey;
         }
@@ -80,12 +83,12 @@ public class IaService {
         if (dotEnvKey != null && !dotEnvKey.isBlank()) {
             return dotEnvKey;
         }
-        throw new IllegalStateException("Gemini API Key is not configured. Please define gemini.api.key in application.properties, set the GEMINI_API_KEY environment variable, or create a .env file with GEMINI_API_KEY.");
+        throw new IllegalStateException("Gemini API Key is not configured. Please define gemini.api.key in application.properties, set the GEMINI_API_KEY environment variable, or configure it in the web Settings page.");
     }
 
-    public String generarContenidoEstudio(String notesContent, String tipoEstudio) {
+    public String generarContenidoEstudio(String notesContent, String tipoEstudio, String clientApiKey) {
         // Validate key presence before running
-        getApiKey();
+        getApiKey(clientApiKey);
 
         GenerablePorIA generator;
         switch (tipoEstudio.toLowerCase()) {
@@ -107,12 +110,12 @@ public class IaService {
 
         String prompt = generator.construirPromptFinal(notesContent);
 
-        return llamarGemini(prompt);
+        return llamarGemini(prompt, clientApiKey);
     }
 
-    public String evaluarRespuestaAbierta(String question, String studentAnswer, String rubric) {
+    public String evaluarRespuestaAbierta(String question, String studentAnswer, String rubric, String clientApiKey) {
         // Validate key presence before running
-        getApiKey();
+        getApiKey(clientApiKey);
 
         String prompt = "Actúa como un evaluador de desarrollo de software y teoría conceptual de ciencias de la computación. Evalúa la respuesta del estudiante a la siguiente pregunta.\n\n"
                 + "Pregunta:\n" + question + "\n\n"
@@ -126,15 +129,15 @@ public class IaService {
                 + "}\n"
                 + "No incluyas explicaciones en texto plano fuera del JSON, solo el objeto JSON.";
 
-        return llamarGemini(prompt);
+        return llamarGemini(prompt, clientApiKey);
     }
 
-    private String llamarGemini(String prompt) {
-        return llamarGemini(prompt, true);
+    private String llamarGemini(String prompt, String clientApiKey) {
+        return llamarGemini(prompt, true, clientApiKey);
     }
 
-    private String llamarGemini(String prompt, boolean forceJson) {
-        String apiKey = getApiKey();
+    private String llamarGemini(String prompt, boolean forceJson, String clientApiKey) {
+        String apiKey = getApiKey(clientApiKey);
         String url = "https://generativelanguage.googleapis.com/v1beta/models/" + geminiModel + ":generateContent?key=" + apiKey;
 
         try {
@@ -174,8 +177,8 @@ public class IaService {
         }
     }
 
-    public String chatearConNota(String chatMessage, String noteContent) {
-        getApiKey();
+    public String chatearConNota(String chatMessage, String noteContent, String clientApiKey) {
+        getApiKey(clientApiKey);
         String prompt = "Eres MenteColmena AI, un asistente de estudio inteligente e interactivo. "
                 + "Responde a la consulta del estudiante de manera clara, concisa y amigable. "
                 + "Si la consulta tiene relación con el apunte provisto, utilízalo para responder de manera contextualizada.\n\n"
@@ -185,6 +188,6 @@ public class IaService {
                 + "-----\n\n"
                 + "Consulta del estudiante: " + chatMessage;
 
-        return llamarGemini(prompt, false);
+        return llamarGemini(prompt, false, clientApiKey);
     }
 }

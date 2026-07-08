@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { 
-  FileText, Trash2, Mail
+  FileText, Trash2, Mail, Brain
 } from "lucide-react";
 import { t } from "../../translations";
 
@@ -31,6 +31,10 @@ export function SettingsMain() {
     return localStorage.getItem("settings_notificationEmail") || "";
   });
 
+  const [geminiApiKey, setGeminiApiKey] = useState(() => {
+    return localStorage.getItem("gemini_api_key") || "";
+  });
+
   const language = "Español";
 
   const handleSaveSettings = () => {
@@ -41,6 +45,7 @@ export function SettingsMain() {
 
     localStorage.setItem("settings_emailReminders", JSON.stringify(localEmailRemind));
     localStorage.setItem("settings_notificationEmail", notificationEmail);
+    localStorage.setItem("gemini_api_key", geminiApiKey.trim());
 
     toast.success("¡Configuración guardada con éxito!");
   };
@@ -60,6 +65,32 @@ export function SettingsMain() {
       </section>
 
       <div className="max-w-2xl space-y-6">
+        {/* Section: Gemini API Key */}
+        <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-5">
+          <div className="flex items-center gap-2 pb-2 border-b border-border">
+            <Brain className="w-5 h-5 text-primary" />
+            <h2 className="text-base font-bold text-foreground">{t("Configuración de IA (Gemini)", language)}</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex flex-col py-2 gap-2">
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                {t("API Key de Google Gemini", language)}
+              </label>
+              <input
+                type="password"
+                value={geminiApiKey}
+                onChange={(e) => setGeminiApiKey(e.target.value)}
+                placeholder={t("Introduce tu API Key de Gemini (ej. AIzaSy...)", language)}
+                className="w-full px-3 py-2.5 text-xs bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition font-medium"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
+                {t("Se utiliza el modelo gratuito gemini-2.5-flash. La API Key se guarda localmente en tu navegador y no se comparte con terceros.", language)}
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Section: System settings */}
         <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-5">
           <div className="flex items-center gap-2 pb-2 border-b border-border">
