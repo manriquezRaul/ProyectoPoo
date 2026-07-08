@@ -72,9 +72,6 @@ public class IaService {
         if (clientApiKey != null && !clientApiKey.isBlank()) {
             return clientApiKey;
         }
-        if (geminiApiKey != null && !geminiApiKey.isBlank()) {
-            return geminiApiKey;
-        }
         String envKey = System.getenv("GEMINI_API_KEY");
         if (envKey != null && !envKey.isBlank()) {
             return envKey;
@@ -82,6 +79,9 @@ public class IaService {
         String dotEnvKey = loadApiKeyFromDotEnv();
         if (dotEnvKey != null && !dotEnvKey.isBlank()) {
             return dotEnvKey;
+        }
+        if (geminiApiKey != null && !geminiApiKey.isBlank()) {
+            return geminiApiKey;
         }
         throw new IllegalStateException("Gemini API Key is not configured. Please define gemini.api.key in application.properties, set the GEMINI_API_KEY environment variable, or configure it in the web Settings page.");
     }
@@ -167,7 +167,7 @@ public class IaService {
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 JsonNode rootNode = objectMapper.readTree(response.getBody());
                 JsonNode textNode = rootNode.path("candidates").get(0).path("content").path("parts").get(0).path("text");
-                return textNode.asText();
+                return textNode.asString() != null ? textNode.asString() : "";
             } else {
                 throw new RuntimeException("API response error: " + response.getStatusCode());
             }

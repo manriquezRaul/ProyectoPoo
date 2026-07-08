@@ -30,6 +30,7 @@ public class IaController {
         this.notaRepository = notaRepository;
     }
 
+    @SuppressWarnings("unchecked")
     @PostMapping("/generar")
     public ResponseEntity<String> generarContenidoEstudio(
             @RequestBody Map<String, Object> payload,
@@ -82,7 +83,7 @@ public class IaController {
         // Filter based on scope
         if ("Pinned notes only".equalsIgnoreCase(scope)) {
             notasAProcesar = notasAProcesar.stream()
-                    .filter(Nota::isPinned)
+                    .filter(n -> n.isPinned())
                     .collect(Collectors.toList());
         }
 
