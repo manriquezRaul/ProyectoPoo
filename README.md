@@ -29,11 +29,14 @@
 
 ### Características Clave:
 *   **Gestión de Apuntes y Study Notebooks**: Permite a los usuarios organizar apuntes en cuadernos temáticos. Admite la redacción nativa y el procesamiento de documentos cargados.
-*   **Estudio Potenciado por IA**: Utilizando la API de Gemini, la plataforma genera automáticamente:
-    *   **Quizzes interactivos**: Preguntas de opción múltiple con retroalimentación instantánea.
-    *   **Flashcards dinámicas**: Tarjetas de memoria conceptuales para autoevaluación ágil.
-    *   **Verdadero/Falso**: Enunciados de validación conceptual rápida.
-    *   **Evaluación de respuestas abiertas**: La IA califica respuestas libres basándose en rúbricas y criterios académicos de alta precisión.
+*   **Estudio y Chat Potenciado por IA**: Utilizando la API de Gemini, la plataforma ofrece:
+    *   **Chat Interactivo con Notas**: Un chat integrado en el visor de apuntes (`NoteViewer`) para conversar directamente sobre el contenido de la nota activa, resolver dudas o solicitar explicaciones.
+    *   **Quiz por Nota**: Generación de preguntas de opción múltiple dinámicas basadas en la nota que se está visualizando.
+    *   **Quizzes de Cuaderno/Globales**: Preguntas interactivas con retroalimentación instantánea a partir de las notas de un cuaderno o de todo el repositorio.
+    *   **Flashcards dinámicas**: Tarjetas de memoria conceptuales para autoevaluación ágil de la sesión de estudio.
+    *   **Verdadero/Falso**: Enunciados de validación rápida para verificar la comprensión conceptual.
+    *   **Evaluación de respuestas abiertas**: Calificación de respuestas libres basada en rúbricas y criterios académicos mediante IA.
+*   **Interfaz Simplificada y Enfocada**: Diseño optimizado libre de modales distractores (como autenticación ficticia, metas rígidas o perfiles), centrado en la productividad y la experiencia de estudio fluida.
 *   **Dashboard de Progreso**: Visualización en tiempo real del desempeño de estudio diario, historial de sesiones y estadísticas detalladas por cuaderno de estudio.
 
 ---
@@ -167,27 +170,35 @@ cd ProyectoPoo
 
 ---
 
-## 6.  Variables de Entorno y Seguridad
+## 6. Configuración y Variables de Entorno
 
-El backend utiliza la API oficial de Google Gemini para toda la lógica de inteligencia artificial. Por motivos de seguridad y buenas prácticas de desarrollo de software, **nunca se deben incluir credenciales o llaves API codificadas directamente (hardcoded) en el código fuente**.
+El backend centraliza su configuración en el archivo `backend/src/main/resources/application.properties`. A continuación se detalla cómo configurar la base de datos y la inteligencia artificial:
 
-### Métodos de Configuración de la API Key de Gemini:
+### 6.1 Base de Datos (MongoDB)
+El backend utiliza las propiedades nativas de Spring Boot para establecer la conexión con MongoDB:
+```properties
+spring.mongodb.host=localhost
+spring.mongodb.port=27017
+spring.mongodb.database=mentecolmena
+```
+*Si utilizas una base de datos local, asegúrate de tener el servicio de MongoDB en ejecución en el puerto `27017`.*
 
-Existen dos formas alternativas de configurar la clave de Gemini:
+### 6.2 Inteligencia Artificial (Gemini API)
+El backend utiliza la API oficial de Google Gemini para la generación de material de estudio y el chat interactivo. Por motivos de seguridad, **nunca se deben incluir credenciales o llaves API codificadas (hardcoded) en el código fuente**.
+
+Existen tres formas alternativas de configurar la clave de Gemini:
 
 #### Método A: Configuración Dinámica desde la Interfaz (Recomendado)
 Puedes ingresar tu API Key directamente desde la pantalla de **Configuración (Settings)** en la aplicación web. 
 - La clave se almacena localmente de forma segura en el navegador (`localStorage`) y se transmite en cada consulta de IA mediante la cabecera `X-Gemini-API-Key`.
 - Esto permite ejecutar la aplicación en cualquier máquina sin necesidad de configurar variables de entorno en el sistema.
 
-#### Método B: Variable de Entorno
-En el archivo `backend/src/main/resources/application.properties`, se define la propiedad que mapea la variable de entorno del backend:
+#### Método B: Variable de Entorno del Sistema
+Puedes configurar la variable `GEMINI_API_KEY` en tu sistema operativo antes de iniciar el backend. En `application.properties` se mapea de la siguiente forma:
 ```properties
 gemini.api.key=${GEMINI_API_KEY:}
 gemini.model=gemini-2.5-flash
 ```
-
-Puedes definir esta variable en tu sistema operativo antes de iniciar el backend:
 
 ##### En macOS o Linux:
 ```bash
@@ -202,15 +213,23 @@ $env:GEMINI_API_KEY="tu_clave_secreta_aqui"
 ##### En entornos IDE (como IntelliJ IDEA, Eclipse o VS Code):
 Puedes pasar la variable `GEMINI_API_KEY` directamente en la configuración de ejecución (*Run Configuration*).
 
-### Protección con `.gitignore`:
+#### Método C: Archivo de Configuración Local (`.env`)
+El backend también tiene soporte para cargar automáticamente la API key desde un archivo `.env` local. El servicio buscará un archivo con la línea `GEMINI_API_KEY=tu_api_key_aqui` en las siguientes rutas de forma ordenada:
+1. En la raíz del monorepo: `./.env`
+2. En la carpeta del backend: `backend/.env`
+3. En la carpeta padre de la raíz: `../.env`
+
+### Protección con `.gitignore`
 El proyecto incluye un archivo `.gitignore` a nivel raíz que bloquea la subida accidental de configuraciones locales delicadas al repositorio de Git:
 ```text
 # Excluir archivos de variables de entorno locales
 **/.env
 **/.env.local
 **/.env.development.local
-**/application.properties (si contiene credenciales locales modificadas)
 ```
+
+> [!IMPORTANT]
+> El archivo `backend/.env.example` ha sido removido del repositorio para evitar conflictos y facilitar la configuración con llaves privadas personales directamente a través de un archivo `.env` local (el cual ya está excluido en el `.gitignore`).
 
 ---
 
