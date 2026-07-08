@@ -19,10 +19,7 @@ public class NotaService {
         return notaRepository.findAll();
     }
 
-    public Nota obtenerPorId(String id){
-        return notaRepository.findById(id).orElse(null);
 
-    }
 
     public Nota guardar(Nota nota) {
         if (nota.getSubject() == null || nota.getSubject().isBlank()) {
