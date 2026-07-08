@@ -1,6 +1,5 @@
 package com.mentecolmena.backend.controller;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.List;
 
 import com.mentecolmena.backend.model.Nota;

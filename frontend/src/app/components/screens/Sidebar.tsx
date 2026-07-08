@@ -5,12 +5,10 @@ import { t } from "../../translations";
 export interface SidebarProps {
   activeNav: string;
   onNavChange: (label: string) => void;
-  currentUser: any;
-  onLogout: () => void;
   language: string;
 }
 
-export function Sidebar({ activeNav, onNavChange, currentUser, onLogout, language }: SidebarProps) {
+export function Sidebar({ activeNav, onNavChange, language }: SidebarProps) {
   return (
     <aside className="flex flex-col w-64 shrink-0 bg-card border-r border-border h-full overflow-y-auto">
       <nav className="flex flex-col gap-1 px-3 py-4 flex-1" aria-label="Main navigation">

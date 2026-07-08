@@ -6,7 +6,7 @@
 [![Vite](https://img.shields.io/badge/Vite-6.4.3-purple.svg?style=flat-square&logo=vite)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.0-38bdf8.svg?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Latest-green.svg?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
-[![Gemini](https://img.shields.io/badge/Google%20Gemini-1.5%20Flash-blueviolet.svg?style=flat-square&logo=googlegemini)](https://deepmind.google/technologies/gemini/)
+[![Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-blueviolet.svg?style=flat-square&logo=googlegemini)](https://deepmind.google/technologies/gemini/)
 
 **MenteColmena** es una plataforma web de estudio inteligente orientada a optimizar el aprendizaje académico y la gestión de conocimientos. Diseñada para estudiantes modernos, la aplicación permite organizar apuntes mediante "Study Notebooks" (Cuadernos de Estudio) e interactuar directamente con modelos de Inteligencia Artificial para la autoevaluación, generación de cuestionarios interactivos (quizzes, flashcards, preguntas de verdadero/falso) y retroalimentación personalizada en tiempo real.
 
@@ -34,7 +34,7 @@
     *   **Flashcards dinámicas**: Tarjetas de memoria conceptuales para autoevaluación ágil.
     *   **Verdadero/Falso**: Enunciados de validación conceptual rápida.
     *   **Evaluación de respuestas abiertas**: La IA califica respuestas libres basándose en rúbricas y criterios académicos de alta precisión.
-*   **Dashboard de Progreso**: Visualización en tiempo real del desempeño de estudio diario, metas semanales, historial de sesiones y estadísticas detalladas por cuaderno de estudio.
+*   **Dashboard de Progreso**: Visualización en tiempo real del desempeño de estudio diario, historial de sesiones y estadísticas detalladas por cuaderno de estudio.
 
 ---
 
@@ -55,11 +55,11 @@ El sistema sigue una arquitectura moderna desacoplada en formato de Monorepo, se
 *   **Apache PDFBox / Apache POI**: Motores de lectura y parsing para extraer texto de archivos PDF y documentos Word (.docx) cargados por el usuario.
 
 ###  Base de Datos
-*   **MongoDB**: Base de datos documental NoSQL flexible que almacena de manera nativa la información de los usuarios, notas, cuadernos, metas y resultados de quizzes en formato JSON/BSON.
+*   **MongoDB**: Base de datos documental NoSQL flexible que almacena de manera nativa la información de las notas, cuadernos, registros de sesión y resultados de quizzes en formato JSON/BSON.
 *   **Spring Data MongoDB**: Abstracción de persistencia que facilita el mapeo objeto-documento mediante repositorios de datos declarativos.
 
 ###  Inteligencia Artificial
-*   **Google Gemini API (`gemini-2.5-flash`)**: Integración directa con el modelo de lenguaje de Google para generar contenido académico estructurado en formato JSON nativo y evaluar de forma automatizada las respuestas del alumno.
+*   **Google Gemini API (`gemini-2.5-flash`)**: Integración directa con el modelo de lenguaje de Google para generar contenido académico estructurado en formato JSON nativo y responder consultas sobre los apuntes del alumno.
 
 ---
 
@@ -79,7 +79,7 @@ MenteColmena/
 │       │   │   ├── BackendApplication.java # Clase de entrada de la aplicación
 │       │   │   ├── controller/             # Controladores REST que exponen las APIs (/api/ia, /api/notas, etc.)
 │       │   │   ├── ia/                     # Abstracciones y generadores de prompts orientados a objetos
-│       │   │   ├── model/                  # Entidades del dominio (Usuario, Cuaderno, Nota, QuizResult)
+│       │   │   ├── model/                  # Entidades del dominio (Cuaderno, Nota, QuizResult, SessionDay)
 │       │   │   ├── repository/             # Interfaces de acceso a datos de MongoDB (MongoRepository)
 │       │   │   └── service/                # Capa lógica de negocio (IaService, DashboardService, etc.)
 │       │   └── resources/
@@ -95,8 +95,8 @@ MenteColmena/
 │       ├── main.tsx                # Punto de montaje del árbol de componentes de React
 │       ├── styles/                 # Estilos globales y configuraciones de Tailwind CSS
 │       └── app/                    # Lógica interna y vistas
-│           ├── App.tsx             # Enrutador principal, flujos de autenticación y estado global
-│           ├── constants.ts        # Constantes, configuraciones estáticas y diccionarios
+│           ├── App.tsx             # Enrutador principal y estado global de la aplicación
+│           ├── constants.ts        # Constantes y configuraciones estáticas
 │           └── components/         # Módulos y elementos visuales reutilizables
 │               ├── ui/             # Botones, alertas, modales y elementos primitivos de diseño
 │               ├── figma/          # Estructuras visuales importadas y mockups de UI
@@ -169,29 +169,38 @@ cd ProyectoPoo
 
 ## 6.  Variables de Entorno y Seguridad
 
-El backend utiliza la API oficial de Google Gemini para toda la lógica de inteligencia artificial. Por motivos de seguridad y buenas prácticas de desarrollo industrial, **nunca se deben incluir credenciales o llaves API codificadas directamente (hardcoded) en el código fuente**.
+El backend utiliza la API oficial de Google Gemini para toda la lógica de inteligencia artificial. Por motivos de seguridad y buenas prácticas de desarrollo de software, **nunca se deben incluir credenciales o llaves API codificadas directamente (hardcoded) en el código fuente**.
 
-### Configuración de la API Key de Gemini:
-En el archivo `backend/src/main/resources/application.properties`, se define la propiedad que mapea la variable de entorno:
+### Métodos de Configuración de la API Key de Gemini:
+
+Existen dos formas alternativas de configurar la clave de Gemini:
+
+#### Método A: Configuración Dinámica desde la Interfaz (Recomendado)
+Puedes ingresar tu API Key directamente desde la pantalla de **Configuración (Settings)** en la aplicación web. 
+- La clave se almacena localmente de forma segura en el navegador (`localStorage`) y se transmite en cada consulta de IA mediante la cabecera `X-Gemini-API-Key`.
+- Esto permite ejecutar la aplicación en cualquier máquina sin necesidad de configurar variables de entorno en el sistema.
+
+#### Método B: Variable de Entorno
+En el archivo `backend/src/main/resources/application.properties`, se define la propiedad que mapea la variable de entorno del backend:
 ```properties
 gemini.api.key=${GEMINI_API_KEY:}
 gemini.model=gemini-2.5-flash
 ```
 
-Puedes definir esta variable en tu sistema operativo antes de levantar el backend:
+Puedes definir esta variable en tu sistema operativo antes de iniciar el backend:
 
-#### En macOS o Linux:
+##### En macOS o Linux:
 ```bash
 export GEMINI_API_KEY="tu_clave_secreta_aqui"
 ```
 
-#### En Windows (PowerShell):
+##### En Windows (PowerShell):
 ```powershell
 $env:GEMINI_API_KEY="tu_clave_secreta_aqui"
 ```
 
-#### En entornos IDE (como IntelliJ IDEA, Eclipse o VS Code):
-Puedes pasar la variable `GEMINI_API_KEY` directamente a las variables de entorno de tu configuración de ejecución (*Run Configuration*).
+##### En entornos IDE (como IntelliJ IDEA, Eclipse o VS Code):
+Puedes pasar la variable `GEMINI_API_KEY` directamente en la configuración de ejecución (*Run Configuration*).
 
 ### Protección con `.gitignore`:
 El proyecto incluye un archivo `.gitignore` a nivel raíz que bloquea la subida accidental de configuraciones locales delicadas al repositorio de Git:

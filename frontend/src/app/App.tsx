@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { t } from "./translations";
 import {
   Hexagon, Clock, Search, Sun, Moon,
-  X, Check, FolderArchive, FileText, Brain, Rocket,
+  X, Check, FolderArchive, FileText, Brain,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────
@@ -61,8 +61,6 @@ export default function App() {
   const [cuadernos, setCuadernos] = useState<any[]>([]);
   const [cuadernosLoading, setCuadernosLoading] = useState(false);
   const [selectedCuadernoId, setSelectedCuadernoId] = useState<string | null>(null);
-  const [goals, setGoals] = useState<any[]>([]);
-  const [goalsLoading, setGoalsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [selectedNote, setSelectedNote] = useState<any>(null);
@@ -75,17 +73,11 @@ export default function App() {
   const [selectedNotebookIds, setSelectedNotebookIds] = useState<string[]>([]);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const [showScopeModal, setShowScopeModal] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<any>({
+  const currentUser = {
     id: "1",
     fullName: "Raúl Andrade",
     email: "raul.andrade@ufro.cl",
-  });
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [regName, setRegName] = useState("");
-  const [regEmail, setRegEmail] = useState("");
-  const [regPassword, setRegPassword] = useState("");
-  const [regConfirm, setRegConfirm] = useState("");
+  };
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -177,61 +169,7 @@ export default function App() {
     }
   };
 
-  const loadGoals = async () => {
-    try {
-      setGoalsLoading(true);
-      const res = await fetch('/api/goals');
-      if (!res.ok) throw new Error('Goals fetch failed');
-      const data = await res.json();
-      setGoals(data || []);
-    } catch (error) {
-      console.error('Goals load failed', error);
-    } finally {
-      setGoalsLoading(false);
-    }
-  };
 
-  const loadQuizzes = async () => {
-    try {
-      const res = await fetch('/api/quizzes');
-      if (!res.ok) throw new Error('Quizzes fetch failed');
-      const data = await res.json();
-      setQuizzes(data || []);
-    } catch (error) {
-      console.error('Quizzes load failed', error);
-    }
-  };
-
-  const saveGoal = async (goal: any, id?: string) => {
-    try {
-      const endpoint = id ? `/api/goals/${id}` : '/api/goals';
-      const method = id ? 'PUT' : 'POST';
-      const res = await fetch(endpoint, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(goal),
-      });
-      if (!res.ok) throw new Error('Save goal failed');
-      await loadGoals();
-      return true;
-    } catch (error) {
-      console.error('Goal save failed', error);
-      return false;
-    }
-  };
-
-  const deleteGoal = async (id?: string) => {
-    if (!id) return false;
-    try {
-      const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Delete goal failed');
-      await loadGoals();
-      return true;
-    } catch (error) {
-      console.error('Goal delete failed', error);
-      return false;
-    }
-  };
 
   const deleteQuiz = async (id?: string) => {
     if (!id) return false;
@@ -316,9 +254,13 @@ export default function App() {
     
     setStudySessionLoading(true);
     try {
+      const apiKey = localStorage.getItem("gemini_api_key") || "";
       const res = await fetch('/api/ia/generar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Gemini-API-Key': apiKey
+        },
         body: JSON.stringify({
           notebookId: selectedCuadernoId,
           tipoEstudio: hubMode,
@@ -360,122 +302,29 @@ export default function App() {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginEmail.trim() || !loginPassword.trim()) {
-      toast.error("Por favor completa todos los campos del login.");
-      return;
-    }
-
+  const loadQuizzes = async () => {
     try {
-      const res = await fetch('/api/usuarios/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: loginEmail,
-          password: loginPassword,
-        }),
-      });
-
-      let data: any = {};
-      try {
-        data = await res.json();
-      } catch (e) {}
-
-      if (!res.ok) {
-        throw new Error(data.error || "Error al iniciar sesión.");
-      }
-
-      setCurrentUser(data);
-      localStorage.setItem("currentUser", JSON.stringify(data));
-      setLoginEmail("");
-      setLoginPassword("");
-      setActiveNav("Home");
-      toast.success(`¡Bienvenido de vuelta, ${data.fullName}!`);
-    } catch (error: any) {
-      console.error("Login error", error);
-      toast.error(error.message || "Error al iniciar sesión.");
+      const res = await fetch('/api/quizzes');
+      if (!res.ok) throw new Error('Quizzes fetch failed');
+      const data = await res.json();
+      setQuizzes(data || []);
+    } catch (error) {
+      console.error('Quizzes load failed', error);
     }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regName.trim() || !regEmail.trim() || !regPassword.trim() || !regConfirm.trim()) {
-      toast.error("Por favor completa todos los campos de registro.");
-      return;
-    }
-
-    if (regPassword.length < 8) {
-      toast.error("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-
-    if (regPassword !== regConfirm) {
-      toast.error("Las contraseñas no coinciden.");
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/usuarios/registrar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: regName,
-          email: regEmail,
-          password: regPassword,
-        }),
-      });
-
-      let data: any = {};
-      try {
-        data = await res.json();
-      } catch (e) {}
-
-      if (!res.ok) {
-        throw new Error(data.error || "Error al registrarse.");
-      }
-
-      setCurrentUser(data);
-      localStorage.setItem("currentUser", JSON.stringify(data));
-      setRegName("");
-      setRegEmail("");
-      setRegPassword("");
-      setRegConfirm("");
-      setActiveNav("Home");
-      toast.success("¡Cuenta creada exitosamente!");
-    } catch (error: any) {
-      console.error("Registration error", error);
-      toast.error(error.message || "Error al registrarse.");
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("currentUser");
-    setCurrentUser(null);
-    setActiveNav("Login");
-    toast.info("Sesión cerrada.");
   };
 
   useEffect(() => {
     loadDashboard();
-    const savedUser = localStorage.getItem("currentUser");
-    if (savedUser) {
-      try {
-        setCurrentUser(JSON.parse(savedUser));
-      } catch (e) {}
-    }
   }, []);
 
   useEffect(() => {
     loadNotes();
     loadCuadernos();
-    loadGoals();
     loadDashboard();
     loadQuizzes();
     const interval = setInterval(() => {
       loadNotes();
       loadCuadernos();
-      loadGoals();
       loadDashboard();
       loadQuizzes();
     }, 20000);
@@ -504,8 +353,6 @@ export default function App() {
   }, [selectedNoteId]);
 
   // Removed authentication redirect effect
-  const isLogin = false;
-  const isRegister = false;
   const isNotebooks = activeNav === "My Notes";
   const isStudy = activeNav === "Study Notebooks";
   const isCreateNote = activeNav === "Create Note";
@@ -660,7 +507,7 @@ export default function App() {
 
       {/* Body columns */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} currentUser={currentUser} onLogout={handleLogout} language={language} />
+        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} language={language} />
         {isCreateNote ? (
           <CreateNoteMain
             onSave={async (note) => {
@@ -701,18 +548,7 @@ export default function App() {
             ) :
               isNotebooks ? <NotebooksMain filter={nbFilter} setFilter={setNbFilter} viewMode={viewMode} setViewMode={setViewMode} onImport={() => setShowImport(true)} onCreateNote={() => setActiveNav("Create Note")} onStudy={() => setActiveNav("Study Hub")} onOpenNote={(id) => openNoteViewer(id, "notes")} notes={notes} loading={notesLoading} onSave={saveNote} onDelete={deleteNote} handleSearch={handleSearch} /> :
                 isSettings ? (
-                  <SettingsMain
-                    darkMode={darkMode}
-                    setDarkMode={setDarkMode}
-                    hubMode={hubMode}
-                    setHubMode={setHubMode}
-                    hubDiff={hubDiff}
-                    setHubDiff={setHubDiff}
-                    hubQCount={hubQCount}
-                    setHubQCount={setHubQCount}
-                    hubTime={hubTime}
-                    setHubTime={setHubTime}
-                  />
+                  <SettingsMain />
                 ) :
                   <HomeMain
                     dashboard={dashboard}
@@ -754,9 +590,6 @@ export default function App() {
               (isSettings || activeNav === "Home") ? null :
                 <HomePanel
                   dashboard={dashboard}
-                  goals={goals}
-                  onSaveGoal={saveGoal}
-                  onDeleteGoal={deleteGoal}
                   onDeleteQuiz={deleteQuiz}
                   onSaveQuiz={saveQuiz}
                   notes={notes}

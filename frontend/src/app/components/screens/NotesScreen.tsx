@@ -731,61 +731,6 @@ export function NotebooksPanel({ notes = [], onOpenNote }: NotebooksPanelProps) 
           </div>
         ))}
       </section>
-
-      <section aria-label="Notes by subject" className="px-5 py-5 border-b border-border flex-1">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Por Materia</h3>
-        <ul className="space-y-2">
-          {SUBJECTS.map((s) => {
-            const count = displayNotes.filter((n) => {
-              const sub = n.subject || "General";
-              return sub === s.name.replace("\n", " ").split(" ")[0] || s.name.includes(sub) || sub === s.name.replace("\n", " ");
-            }).length;
-            return (
-              <li key={s.id}>
-                <button className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition group">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ background: s.bg, border: `1px solid ${s.border}` }}>
-                    {s.icon}
-                  </div>
-                  <span className="flex-1 text-left text-xs font-medium text-foreground truncate leading-tight">
-                    {s.name.replace("\n", " ")}
-                  </span>
-                  <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full group-hover:bg-border">
-                    {count}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      <section aria-label="Pinned notes" className="px-5 py-5">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Anclados</h3>
-        <ul className="space-y-2">
-          {pinnedNotes.map((n) => {
-            const subject = n.subject || "OOP";
-            const badge = (SUBJECT_BADGE as any)[subject] || { bg: "#F3F4F6", text: "#111827" };
-            return (
-              <li key={n.id}>
-                <button
-                  onClick={() => onOpenNote?.(n.id)}
-                  className="w-full text-left p-3 rounded-xl border border-border hover:bg-muted/50 transition group"
-                >
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.text }}>
-                    {subject}
-                  </span>
-                  <p className="text-xs font-semibold text-foreground mt-1.5 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                    {n.title || n.titulo || "Sin Título"}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : n.date || "Hace un momento"}
-                  </p>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
     </aside>
   );
 }

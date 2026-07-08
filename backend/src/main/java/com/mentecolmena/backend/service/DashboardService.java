@@ -47,7 +47,7 @@ public class DashboardService {
         data.setActiveDays(activeDays);
         data.setStreakDays(calculateStreak(days));
         data.setBestStreak(Math.max(data.getStreakDays(), 12));
-        data.setTotalSessionsStarted(days.stream().mapToInt(SessionDay::getSessionsStarted).sum());
+        data.setTotalSessionsStarted(days.stream().mapToInt(d -> d.getSessionsStarted()).sum());
 
         data.setWeeklyActivity(buildWeeklyActivity(days));
         data.setSubjects(buildStudySubjects());
@@ -73,13 +73,13 @@ public class DashboardService {
     private int calculateAccuracy(List<QuizResult> recentQuizzes) {
         if (recentQuizzes.isEmpty())
             return 0;
-        return (int) recentQuizzes.stream().mapToInt(QuizResult::getScore).average().orElse(0);
+        return (int) recentQuizzes.stream().mapToInt(q -> q.getScore()).average().orElse(0);
     }
 
     private int calculateWeeklyCompletion(List<QuizResult> recentQuizzes) {
         if (recentQuizzes.isEmpty())
             return 0;
-        long met = recentQuizzes.stream().filter(QuizResult::isGoalMet).count();
+        long met = recentQuizzes.stream().filter(q -> q.isGoalMet()).count();
         return (int) ((met * 100.0) / recentQuizzes.size());
     }
 
@@ -140,7 +140,7 @@ public class DashboardService {
                             return false;
                         }
                     })
-                    .mapToInt(SessionDay::getSessionsStarted).sum();
+                    .mapToInt(d -> d.getSessionsStarted()).sum();
             result.add(new DashboardData.DailyActivity(label, notes, quizzes));
         }
         return result;
@@ -159,7 +159,7 @@ public class DashboardService {
         if (oopNotes > 0) {
             oopAvg = allQuizzes.stream()
                     .filter(q -> q.getSubject() != null && (q.getSubject().toLowerCase().contains("oop") || q.getSubject().toLowerCase().contains("object-oriented")))
-                    .mapToInt(QuizResult::getScore)
+                    .mapToInt(q -> q.getScore())
                     .average()
                     .orElse(0);
         }
@@ -172,7 +172,7 @@ public class DashboardService {
         if (dbNotes > 0) {
             dbAvg = allQuizzes.stream()
                     .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("database"))
-                    .mapToInt(QuizResult::getScore)
+                    .mapToInt(q -> q.getScore())
                     .average()
                     .orElse(0);
         }
@@ -185,7 +185,7 @@ public class DashboardService {
         if (calcNotes > 0) {
             calcAvg = allQuizzes.stream()
                     .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("calculus"))
-                    .mapToInt(QuizResult::getScore)
+                    .mapToInt(q -> q.getScore())
                     .average()
                     .orElse(0);
         }
@@ -198,7 +198,7 @@ public class DashboardService {
         if (dsNotes > 0) {
             dsAvg = allQuizzes.stream()
                     .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("data structure"))
-                    .mapToInt(QuizResult::getScore)
+                    .mapToInt(q -> q.getScore())
                     .average()
                     .orElse(0);
         }
@@ -211,7 +211,7 @@ public class DashboardService {
         if (laNotes > 0) {
             laAvg = allQuizzes.stream()
                     .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("linear algebra"))
-                    .mapToInt(QuizResult::getScore)
+                    .mapToInt(q -> q.getScore())
                     .average()
                     .orElse(0);
         }
@@ -224,7 +224,7 @@ public class DashboardService {
         if (dmNotes > 0) {
             dmAvg = allQuizzes.stream()
                     .filter(q -> q.getSubject() != null && q.getSubject().toLowerCase().contains("discrete math"))
-                    .mapToInt(QuizResult::getScore)
+                    .mapToInt(q -> q.getScore())
                     .average()
                     .orElse(0);
         }
